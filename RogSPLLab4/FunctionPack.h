@@ -17,6 +17,26 @@ int summ(int x, int y) {
     return x+y;
 }
 
+int max(int x, int y) {
+    int max_n;
+    if (x>y) {
+        max_n = x;
+    } else {
+        max_n = y;
+    }
+    return max_n;
+}
+
+int min(int x, int y) {
+    int min_n;
+    if (x<y) {
+        min_n = x;
+    } else {
+        min_n = y;
+    }
+    return min_n;
+}
+
 void pr_one_line(int x) {
     printf("%d ",x);
 }
