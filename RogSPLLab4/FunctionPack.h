@@ -37,6 +37,15 @@ int min(int x, int y) {
     return min_n;
 }
 
+int twice(int x) {
+    return x*2;
+}
+
+int module(int x) {
+    if (x>=0) return x;
+    else return x*(-1);
+}
+
 void pr_one_line(int x) {
     printf("%d ",x);
 }

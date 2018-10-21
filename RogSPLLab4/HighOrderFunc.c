@@ -31,6 +31,7 @@ int foldl (struct linked_list* link_list, int acc, int (*func) (int,int)) {
 }
 
 void foreach (struct linked_list* link_list, void (*func) (int)) {
+
     while (link_list->prev_el != NULL){
         link_list = link_list-> prev_el;
     }
@@ -38,5 +39,17 @@ void foreach (struct linked_list* link_list, void (*func) (int)) {
         func(link_list->element);
         link_list = link_list->next_el;
     }
+
+}
+
+struct linked_list* iterate(int num, int length, int (*func)(int)) {
+
+    struct linked_list* link_list = NULL;
+    int i;
+    for(i=0; i < length; i++){
+        front_add(&link_list, num);
+        num = func(num);
+    }
+    return link_list;
 
 }
