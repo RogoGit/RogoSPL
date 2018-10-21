@@ -99,39 +99,39 @@ int list_sum(struct linked_list const* link_list){
 }
 
 bool serialize(struct linked_list* link_list, const char* filename){
-    FILE* output_file = fopen(filename,"wt");
-    if (output_file == NULL) {
-        return false;
-    }
+    FILE* output = fopen(filename,"wt");
+
+    if (output == NULL) { return false; }
+
     size_t sz = (size_t) list_length(link_list);
     int i;
-    int* buf = (int*)malloc(sz* sizeof(int));
-    for (i = 0; i < sz; ++i) {
-        buf[i] = link_list->element;
+    int* buffer = (int*)malloc(sz* sizeof(int));
+    for (i = 0; i < sz; i++) {
+        buffer[i] = link_list->element;
         link_list = link_list->prev_el;
     }
-    fwrite(buf, sz, sizeof(int), output_file);
-    fclose(output_file);
+    fwrite(buffer, sz, sizeof(int), output);
+    fclose(output);
     return true;
 }
 
-bool deserialize(struct linked_list** list, const char* filename){
-    FILE* input_file = fopen(filename, "rt");
-    if (input_file == NULL) {
-        return false;
-    }
-    fseek(input_file, 0, SEEK_END);
-    long sz = ftell(input_file);
+bool deserialize(struct linked_list** link_list, const char* filename){
+    FILE* input = fopen(filename, "rt");
+
+    if (input == NULL) { return false; }
+
+    fseek(input, 0, SEEK_END);
+    long sz = ftell(input);
     int i;
-    rewind(input_file);
+    rewind(input);
 
-    int* buf = (int*)malloc(sz);
-    fread(buf, sz/sizeof(int), sizeof(int), input_file);
+    int* buffer = (int*)malloc(sz);
+    fread(buffer, sz/sizeof(int), sizeof(int), input);
 
-    for(i = 0; i < sz/ sizeof(int); ++i){
-        front_add(list, *(buf + i));
+    for(i = 0; i < sz/ sizeof(int); i++){
+        front_add(link_list, buffer[i]);
     }
-    fclose(input_file);
+    fclose(input);
     return true;
 }
 

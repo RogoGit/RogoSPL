@@ -73,7 +73,16 @@ int main() {
     } else {
         puts("\nНе удалось сохранить");
     }
-
-
+    ////////
+    puts("\nСериализуем список");
+    serialize(list,"Serialize");
+    linked_list_free(&list);
+    deserialize(&list, "Serialize");
+    puts("\nПосле сериализации:");
+    foreach(list,pr_one_line);
+    ///////
+    puts("\nОчистим список");
+    linked_list_free(&list);
+    if (list==NULL) {puts("Теперь список пуст");}
     return 0;
 }
