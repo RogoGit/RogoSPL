@@ -98,7 +98,7 @@ int list_sum(struct linked_list const* link_list){
     return sum;
 }
 
-void print_this_list(struct linked_list const* link_list) {
+/*void print_this_list(struct linked_list const* link_list) {
 
     printf("\n Количество элементов: %d\n",list_length(link_list));
     printf("Сумма элементов: %d\n", list_sum(link_list));
@@ -115,7 +115,7 @@ void print_this_list(struct linked_list const* link_list) {
         link_list = link_list->next_el;
     }
     printf("\n");
-}
+}*/
 
 bool serialize(struct linked_list* link_list, const char* filename){
     FILE* output_file = fopen(filename,"wt");

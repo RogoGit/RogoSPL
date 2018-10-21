@@ -32,7 +32,7 @@ int list_get(struct linked_list* link_list, unsigned int index);
 
 int list_sum(struct linked_list const* link_list);
 
-void print_this_list(struct linked_list const* link_list);
+//void print_this_list(struct linked_list const* link_list);
 
 bool deserialize(struct linked_list** list, const char* filename);
 

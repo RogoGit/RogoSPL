@@ -47,9 +47,10 @@ struct linked_list* iterate(int num, int length, int (*func)(int)) {
     struct linked_list* link_list = NULL;
     int i;
     for(i=0; i < length; i++){
-        front_add(&link_list, num);
+        back_add(&link_list, num);
         num = func(num);
     }
+
     return link_list;
 
 }

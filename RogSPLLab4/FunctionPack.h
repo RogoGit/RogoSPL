@@ -62,4 +62,6 @@ int foldl (struct linked_list* link_list, int acc, int (*func) (int,int));
 
 void foreach (struct linked_list* link_list, void (*func) (int));
 
+struct linked_list* iterate(int num, int length, int (*func)(int));
+
 #endif //ROGSPLLAB4_FUNCTIONPACK_H
