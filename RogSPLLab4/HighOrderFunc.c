@@ -29,3 +29,14 @@ int foldl (struct linked_list* link_list, int acc, int (*func) (int,int)) {
     }
     return acc;
 }
+
+void foreach (struct linked_list* link_list, void (*func) (int)) {
+    while (link_list->prev_el != NULL){
+        link_list = link_list-> prev_el;
+    }
+    while (link_list != NULL) {
+        func(link_list->element);
+        link_list = link_list->next_el;
+    }
+
+}

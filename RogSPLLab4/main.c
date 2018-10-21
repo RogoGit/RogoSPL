@@ -10,7 +10,7 @@ int main() {
     while (scanf("%d",&element) != EOF ) {
         back_add(&list, element);
     }
-    print_this_list(list);
+   // print_this_list(list);
    /* demo = list_get(list,3);                       Tests and working demo
     printf("%d\n",demo);
     front_add(&list,8);
@@ -18,6 +18,8 @@ int main() {
     print_this_list(list);
     linked_list_free(&list);
     print_this_list(list); */
+    foreach(list,pr_one_line);
+    foreach(list,pr_few_line);
     print_this_list(map(list, square));
     int ss = foldl(list,0,summ);
     printf("%d\n",ss);
