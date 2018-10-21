@@ -149,16 +149,20 @@ bool load(struct linked_list** link_list, const char* filename){
     return true;
 }
 
-bool save(struct linked_list* list, const char* filename){
-    FILE* output_file = fopen(filename, "wt");
-    if (output_file == NULL){
-        return false;
+bool save(struct linked_list* link_list, const char* filename){
+    FILE* output = fopen(filename, "wt");
+
+    if (output == NULL){ return false; }
+
+    while (link_list->prev_el != NULL) {
+        link_list = link_list->prev_el;
     }
-    while (list != NULL) {
-        fprintf(output_file, "%d ", list->element);
-        list = list->prev_el;
+
+    while (link_list != NULL) {
+        fprintf(output, "%d ", link_list->element);
+        link_list = link_list->next_el;
     }
-    fclose(output_file);
+    fclose(output);
     return true;
 }
 

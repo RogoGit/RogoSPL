@@ -21,8 +21,11 @@ int main() {
             break;
         }
         case 2: {
-            load(&list,"Lab4In.txt");
-          // if (load(&list,"Lab4In.txt")) puts("Считано из файла");
+            //load(&list,"Lab4In.txt");
+          if (load(&list,"Lab4In.txt")) puts("Считано из файла"); else {
+              puts("Не удалось счиать");
+              return 0;
+          }
             break;
         }
         default: {
@@ -64,6 +67,13 @@ int main() {
     puts("\nИтерируем - степени двойки");
     map_list = iterate(1,10,twice);
     foreach(map_list,pr_one_line);
-    ////////
+    ///////
+    if (save(list,"Lab4Out.txt")) {
+        puts("\nСписок сохранен в Lab4Out.txt");
+    } else {
+        puts("\nНе удалось сохранить");
+    }
+
+
     return 0;
 }
