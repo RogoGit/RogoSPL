@@ -98,25 +98,6 @@ int list_sum(struct linked_list const* link_list){
     return sum;
 }
 
-/*void print_this_list(struct linked_list const* link_list) {
-
-    printf("\n Количество элементов: %d\n",list_length(link_list));
-    printf("Сумма элементов: %d\n", list_sum(link_list));
-    if (link_list == NULL){
-        printf("Список пуст\n");
-        return;
-    }
-    while (link_list->prev_el != NULL){
-        link_list = link_list-> prev_el;
-    }
-    printf("Список: ");
-    while (link_list != NULL) {
-        printf("%d ", link_list->element);
-        link_list = link_list->next_el;
-    }
-    printf("\n");
-}*/
-
 bool serialize(struct linked_list* link_list, const char* filename){
     FILE* output_file = fopen(filename,"wt");
     if (output_file == NULL) {
@@ -154,16 +135,17 @@ bool deserialize(struct linked_list** list, const char* filename){
     return true;
 }
 
-bool load(struct linked_list** list, const char* filename){
-    int e;
-    FILE* input_file = fopen(filename, "r");
-    if (input_file == NULL) {
-        return false;
+bool load(struct linked_list** link_list, const char* filename){
+    int el;
+    //char* file_content = (char*)malloc(fsize);
+    FILE* input = fopen(filename, "r");
+
+    if (input == NULL) { return false; }
+
+    while (fscanf(input, "%d", &el) != EOF) {
+        back_add(link_list, el);
     }
-    while ( fscanf(input_file, "%d", &e) != EOF) {
-        back_add(list, e);
-    }
-    fclose(input_file);
+    fclose(input);
     return true;
 }
 

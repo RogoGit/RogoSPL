@@ -8,10 +8,27 @@ int main() {
     int sum;
     int maxim;
     int minim;
+    int ch;
     struct linked_list *list = NULL;
     struct linked_list *map_list = NULL;
-    while (scanf("%d",&element) != EOF ) {
-        back_add(&list, element);
+    puts("1 - читать с клавиатуры, 2 - читать из файла");
+    scanf("%d",&ch);
+    switch (ch) {
+        case 1: {
+            while (scanf("%d",&element) != EOF ) {
+                back_add(&list, element);
+            }
+            break;
+        }
+        case 2: {
+            load(&list,"Lab4In.txt");
+          // if (load(&list,"Lab4In.txt")) puts("Считано из файла");
+            break;
+        }
+        default: {
+            puts("Нет такой опции");
+            return 0;
+        }
     }
     puts("Выведем с помощью foreach");
     foreach(list,pr_one_line);
