@@ -8,7 +8,7 @@
 
 struct linked_list* create_linked_list(int element) {
 
-    struct linked_list *new_element_list = (struct linked_list*)malloc(sizeof(struct linked_list));
+    struct linked_list* new_element_list = (struct linked_list*)malloc(sizeof(struct linked_list));
     new_element_list->element = element;
     new_element_list->prev_el = NULL;
     new_element_list->next_el = NULL;
@@ -30,13 +30,13 @@ void front_add (struct linked_list** link_list, int element) {
 
     if (*link_list == NULL){ *link_list = create_linked_list(element); return; }
 
-    struct linked_list *new_element = (struct linked_list*)malloc(sizeof(struct linked_list));
+    struct linked_list* new_element = (struct linked_list*)malloc(sizeof(struct linked_list));
     new_element->element = element;
     new_element->prev_el = NULL;
     struct linked_list* tmp_list = *link_list;
-    while(tmp_list->prev_el != NULL){
-        tmp_list = tmp_list->prev_el;
-    }
+
+    while(tmp_list->prev_el != NULL){ tmp_list = tmp_list->prev_el; }
+
     new_element->next_el = tmp_list;
     tmp_list->prev_el = new_element;
 }
@@ -45,7 +45,7 @@ void back_add (struct linked_list** link_list, int element) {
 
     if (*link_list == NULL){ *link_list = create_linked_list(element); return; }
 
-    struct linked_list *new_element = (struct linked_list*)malloc(sizeof(struct linked_list));
+    struct linked_list* new_element = (struct linked_list*)malloc(sizeof(struct linked_list));
     new_element->element = element;
     new_element->next_el = NULL;
     new_element->prev_el = *link_list;
@@ -99,7 +99,7 @@ int list_sum(struct linked_list const* link_list){
 }
 
 bool serialize(struct linked_list* link_list, const char* filename){
-    FILE* output = fopen(filename,"wt");
+    FILE* output = fopen(filename,"w");
 
     if (output == NULL) { return false; }
 
@@ -116,7 +116,7 @@ bool serialize(struct linked_list* link_list, const char* filename){
 }
 
 bool deserialize(struct linked_list** link_list, const char* filename){
-    FILE* input = fopen(filename, "rt");
+    FILE* input = fopen(filename, "r");
 
     if (input == NULL) { return false; }
 
