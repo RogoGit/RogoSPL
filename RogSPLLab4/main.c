@@ -12,18 +12,22 @@ int main() {
     struct linked_list *list = NULL;
     struct linked_list *map_list = NULL;
     puts("1 - читать с клавиатуры, 2 - читать из файла");
-    scanf("%d",&ch);
+   // scanf("%d",&ch);
+    ch = getchar();
     switch (ch) {
-        case 1: {
-            while (scanf("%d",&element) != EOF ) {
-                back_add(&list, element);
+        case '1': {
+            int fl=0;
+            while (scanf("%d",&element) != EOF) {
+                fl=1;
+            back_add(&list, element);
             }
+            if (fl==0) {puts("Ничего не введено"); return 0;}
             break;
         }
-        case 2: {
+        case '2': {
             //load(&list,"Lab4In.txt");
           if (load(&list,"Lab4In.txt")) puts("Считано из файла"); else {
-              puts("Не удалось счиать");
+              puts("Файл пуст");
               return 0;
           }
             break;

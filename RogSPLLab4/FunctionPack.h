@@ -5,7 +5,7 @@
 #ifndef ROGSPLLAB4_FUNCTIONPACK_H
 #define ROGSPLLAB4_FUNCTIONPACK_H
 
-int square(int x) {
+ int square(int x) {
     return x*x;
 }
 

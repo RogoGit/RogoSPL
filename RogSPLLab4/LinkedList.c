@@ -137,21 +137,23 @@ bool deserialize(struct linked_list** link_list, const char* filename){
 
 bool load(struct linked_list** link_list, const char* filename){
     int el;
+    int fl=0;
     //char* file_content = (char*)malloc(fsize);
     FILE* input = fopen(filename, "r");
 
     if (input == NULL) { return false; }
 
     while (fscanf(input, "%d", &el) != EOF) {
+        fl =1;
         back_add(link_list, el);
     }
+    if (fl==0) {return false;}
     fclose(input);
     return true;
 }
 
 bool save(struct linked_list* link_list, const char* filename){
     FILE* output = fopen(filename, "wt");
-
     if (output == NULL){ return false; }
 
     while (link_list->prev_el != NULL) {
