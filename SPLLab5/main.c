@@ -2,26 +2,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "bmp_pic_struct.h"
-
-struct image* rotate(const struct image* pic) {
-    uint32_t row;
-    uint32_t col;
-
-    struct image* rotated = (struct image*)malloc( pic->width * pic->height * sizeof(struct image));
-    rotated->data = (struct pixel*)malloc( pic->height * pic->width* sizeof(struct pixel));
-    rotated->width = pic->height;
-    rotated->height = pic->width;
-
-    for (row = 0;  row < pic->height; row++){
-        for (col = 0; col < pic->width; col++){
-            rotated->data [col * pic->height + row] = rotated->data [row * pic->width + col];
-        }
-    }
-    return rotated;
-
-}
+#include "rotation.h"
 
 int main() {
+
     struct bmp_header header;
     FILE *f = fopen("hqdefault.bmp", "rb");
     fread(&header, 1, sizeof(header), f);
@@ -35,6 +19,8 @@ int main() {
     pic->height = header.biHeight;
     pic->width = header.biWidth;
     pic->data = data;
+
+    struct image* new_picture = rotate(pic);
 
     //printf("Magic: %c%c\n", header.magic_number[0], header.magic_number[1]);
     return 0;
