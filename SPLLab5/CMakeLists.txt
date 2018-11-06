@@ -3,4 +3,4 @@ project(SPLLab5 C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(SPLLab5 main.c bmp_pic_struct.h rotation.c rotation.h)
+add_executable(SPLLab5 main.c bmp_pic_struct.h rotation.c rotation.h in_out_bmp.c in_out_bmp.h)
