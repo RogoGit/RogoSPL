@@ -1,3 +1,5 @@
+//BY KALUGINA MARINA
+
 #include <malloc.h>
 #include <fcntl.h>
 #include <sys/stat.h>

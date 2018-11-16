@@ -8,13 +8,11 @@ int main() {
 
     /*rotate_bmp("hqdefault.bmp", "out.bmp");
     image_bmp_fused_rotate_90cw("hqdefault.bmp", "out2.bmp");
-    return 0;*/
-    struct image* input_image = (struct image*)malloc(sizeof(struct image));
-    switch (read_bmp("hqdefault.bmp", input_image)) {
-        case READ_FILENAME_NOT_FOUND :{
-            printf("Не найден файл.\n");
-            break;
-        }
+    */
+
+    struct image* inp_image = (struct image*)malloc(sizeof(struct image));
+    switch (read_picture("hqdefault.bmp", inp_image)) {
+
         case READ_INVALID_BITS: {
             printf("Проблемы с данными.\n");
             break;
@@ -33,8 +31,8 @@ int main() {
         }
     }
 
-    struct image* output_image = rotate(input_image);
-    switch (write_bmp("out.bmp", output_image)){
+    struct image* out_image = rotate(inp_image);
+    switch (write_picture("out.bmp", out_image)){
         case WRITE_IMAGE_NOT_FOUND: {
             printf("Изображение для записи не найдено.\n");
             break;

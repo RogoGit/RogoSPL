@@ -14,7 +14,6 @@ enum read_error_code {
     READ_FILE_NOT_FOUND,
     READ_INVALID_BITS,
     READ_INVALID_HEADER,
-    READ_FILENAME_NOT_FOUND
 } ;
 
 enum write_error_code {
@@ -25,7 +24,7 @@ enum write_error_code {
 } ;
 
 
-enum read_error_code read_bmp(char const* filename, struct image* new_image);
-enum write_error_code write_bmp(char const* filename, struct image const* image);
+enum read_error_code read_picture(char const* filename, struct image* new_image);
+enum write_error_code write_picture(char const* filename, struct image const* image);
 
 #endif //SPLLAB5_IN_OUT_BMP_H
