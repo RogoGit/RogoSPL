@@ -3,54 +3,26 @@
 #include "in_out_bmp.h"
 #include "bmp_pic_struct.h"
 
-enum write_error_code write_bmp(char const* filename, struct image const* image){
+struct bmp_header* create_header(struct image const* pic, int padding) {
 
-    if (image == NULL){
-        return WRITE_IMAGE_NOT_FOUND;
-    }
-    if (filename == NULL){
-        return WRITE_FILENAME_NOT_FOUND;
-    }
     struct bmp_header* header = (struct bmp_header*)malloc(sizeof(struct bmp_header));
-    int padding = image->width % 4;
-    uint32_t i, j;
-    struct image* new_image = (struct image*)malloc(sizeof(struct image));
-    new_image->width = image->width+padding;
-    new_image->height = image->height;
-    new_image->data = (struct pixel*)calloc(1, new_image->height * new_image->width * sizeof(struct pixel));
 
-    for (i = 0; i < new_image->height; ++i){
-        for (j = 0; j < new_image->width; ++j){
-            if(j < new_image->width - padding) {
-                *(new_image->data + i * new_image->width + j) = *(image->data + i * image->width + j);
-            }
-        }
-    }
-
-    FILE* output = fopen(filename, "wb+");
-    if (output == NULL){
-        return WRITE_ERROR;
-    }
     header->bfType = 19778;
-    header->bfileSize = new_image->width * new_image->height * sizeof(struct pixel) + sizeof(header);
+    header->bfileSize = pic->width * pic->height * sizeof(struct pixel) + sizeof(header);
     header->bfReserved = 0;
     header->bOffBits = sizeof(struct bmp_header);
     header->biSize = 40;
     header->biPlanes = 0;
     header->biBitCount = 24;
     header->biCompression = 0;
-    header->biSizeImage = new_image->width * new_image->height * sizeof(struct pixel);
+    header->biSizeImage = pic->width * pic->height * sizeof(struct pixel);
     header->biXPelsPerMeter = 2835;
     header->biYPelsPerMeter = 2835;
     header->biClrUsed = 0;
     header->biClrImportant = 0;
-    header->biWidth = new_image->width - padding;
-    header->biHeight = new_image->height;
-
-    fwrite(header, 1, sizeof(struct bmp_header), output);
-    fwrite(image->data, 1, new_image->height * new_image->width * sizeof(struct pixel), output);
-    fclose(output);
-    return WRITE_OK;
+    header->biWidth = pic->width - padding;
+    header->biHeight = pic->height;
+    return header;
 }
 
 enum read_error_code read_bmp(char const* filename, struct image* input_image){
@@ -89,3 +61,43 @@ enum read_error_code read_bmp(char const* filename, struct image* input_image){
     fclose(input);
     return READ_OK;
 }
+
+
+
+enum write_error_code write_bmp(char const* filename, struct image const* image){
+
+    if (image == NULL){
+        return WRITE_IMAGE_NOT_FOUND;
+    }
+    if (filename == NULL){
+        return WRITE_FILENAME_NOT_FOUND;
+    }
+ ////
+    int padding = image->width % 4;
+    struct bmp_header* header = create_header(image,padding);
+    uint32_t i, j;
+    struct image* new_image = (struct image*)malloc(sizeof(struct image));
+    new_image->width = image->width+padding;
+    new_image->height = image->height;
+    new_image->data = (struct pixel*)calloc(1, new_image->height * new_image->width * sizeof(struct pixel));
+
+    for (i = 0; i < new_image->height; ++i){
+        for (j = 0; j < new_image->width; ++j){
+            if(j < new_image->width - padding) {
+                *(new_image->data + i * new_image->width + j) = *(image->data + i * image->width + j);
+            }
+        }
+    }
+
+    FILE* output = fopen(filename, "wb+");
+    if (output == NULL){
+        return WRITE_ERROR;
+    }
+
+
+    fwrite(header, 1, sizeof(struct bmp_header), output);
+    fwrite(image->data, 1, new_image->height * new_image->width * sizeof(struct pixel), output);
+    fclose(output);
+    return WRITE_OK;
+}
+
