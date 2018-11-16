@@ -31,7 +31,7 @@ enum read_error_code read_picture(char const* filename, struct image* input_bmp)
     int col;
 
     struct bmp_header header;
-    FILE* input_file = fopen(filename, "rb+");
+    FILE* input_file = fopen(filename, "rb");
 
     if (filename == NULL || input_file == NULL){ return READ_FILE_NOT_FOUND; }
 
