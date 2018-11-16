@@ -1,112 +1,91 @@
-//
-// Created by dell on 06.11.18.
-//
-
+#include <stdlib.h>
+#include <stdio.h>
 #include "in_out_bmp.h"
 #include "bmp_pic_struct.h"
 
-struct bmp_header* create_pic_header(struct image* pic,uint64_t padd) {
-    struct bmp_header* header = (struct bmp_header*)malloc(sizeof(struct bmp_header));
-    header->bfType = 19778;
-    header->bfileSize = pic->width * pic->height * sizeof(struct pixel) + sizeof(header);
-    header->bfReserved = 0;
-    header->OffSet = sizeof(struct bmp_header);
-    header->biSize = 40;
-    header->biPlanes = 0;
-    header->biBitCount = 24;
-    header->biCompression = 0;
-    header->biSizeImage = pic->width * pic->height * sizeof(struct pixel);
-    header->biXPelsPerMeter = 2835;
-    header->biYPelsPerMeter = 2835;
-    header->biClrUsed = 0;
-    header->biClrImportant = 0;
-    header->biWidth = pic->width - padd;
-    header->biHeight = pic->height;
-    return header;
-}
+enum write_error_code write_bmp(char const* filename, struct image const* image){
 
-enum read_error_code read_pic (char const* filename, struct image* inp_pic){
-
-    uint32_t row;
-    uint32_t col;
-
-    FILE* in = fopen(filename, "rb");
-    if ((filename == NULL) || (in == NULL)) { return READ_FILE_NOT_FOUND; }
-
-    struct bmp_header header;
-    fread(&header, 1, sizeof(header), in);
-    u_int64_t padd = header.biWidth % 4;
-
-    if (header.bfType != 19778){ return READ_INVALID_HEADER; }
-
-    uint8_t* pixel_data = (uint8_t *)malloc(header.biSizeImage);
-    fseek(in, header.OffSet, SEEK_SET);
-    fread(pixel_data, 1, header.biSizeImage, in);
-
-    if (pixel_data == NULL) { return READ_INVALID_BITS; }
-    //if (inp_pic == NULL) {
-    inp_pic = (struct image*)malloc(sizeof(struct image));
-    //}
-    inp_pic->height = header.biHeight;
-    inp_pic->width = header.biWidth;
-    inp_pic->data = (struct pixel*)malloc(header.biHeight * header.biWidth * sizeof(struct pixel));
-
-    for (row = 0; row < header.biHeight; row++){
-        for (col = 0; col < header.biWidth; col++){
-            inp_pic->data[row*header.biWidth + col] =
-                    *(struct pixel*)((pixel_data) + sizeof(struct pixel)*(row*header.biWidth + col) + padd*row);
-        }
+    if (image == NULL){
+        return WRITE_IMAGE_NOT_FOUND;
     }
-    fclose(in);
-    return READ_OK;
-}
+    if (filename == NULL){
+        return WRITE_FILENAME_NOT_FOUND;
+    }
+    struct bmp_header* header = (struct bmp_header*)malloc(sizeof(struct bmp_header));
+    int padding = image->width % 4;
+    uint32_t i, j;
+    struct image* new_image = (struct image*)malloc(sizeof(struct image));
+    new_image->width = image->width+padding;
+    new_image->height = image->height;
+    new_image->data = (struct pixel*)calloc(1, new_image->height * new_image->width * sizeof(struct pixel));
 
-
-enum write_error_code write_pic (char const* filename, struct image const* image) {
-
-    uint64_t padd = image->width % 4;
-    uint32_t row;
-    uint32_t col;
-
-    if ((image == NULL)||(filename == NULL)) return WRITE_ERROR;
-
-    struct image* new_pic = (struct image*)malloc(sizeof(struct image));
-    new_pic->width = image->width+padd;
-    new_pic->height = image->height;
-    new_pic->data = (struct pixel*)calloc(1, new_pic->height * new_pic->width * sizeof(struct pixel));
-
-    for (row = 0; row < new_pic->height; row++){
-        for (col = 0; col < new_pic->width; col++){
-            if(col < new_pic->width - padd) {
-                new_pic->data[row * new_pic->width + col] = image->data[row * image->width + col];
+    for (i = 0; i < new_image->height; ++i){
+        for (j = 0; j < new_image->width; ++j){
+            if(j < new_image->width - padding) {
+                *(new_image->data + i * new_image->width + j) = *(image->data + i * image->width + j);
             }
         }
     }
 
-    FILE* out = fopen(filename, "wb+");
-    if (out == NULL){ return WRITE_ERROR; }
-    //
-//struct bmp_header* header = create_pic_header(new_pic,padd);
-    struct bmp_header* header = (struct bmp_header*)malloc(sizeof(struct bmp_header));
-    fwrite(header, 1, sizeof(struct bmp_header), out);
-
+    FILE* output = fopen(filename, "wb+");
+    if (output == NULL){
+        return WRITE_ERROR;
+    }
     header->bfType = 19778;
-    header->bfileSize = new_pic->width * new_pic->height * sizeof(struct pixel) + sizeof(header);
+    header->bfileSize = new_image->width * new_image->height * sizeof(struct pixel) + sizeof(header);
     header->bfReserved = 0;
-    header->OffSet = sizeof(struct bmp_header);
+    header->bOffBits = sizeof(struct bmp_header);
     header->biSize = 40;
     header->biPlanes = 0;
     header->biBitCount = 24;
     header->biCompression = 0;
-    header->biSizeImage = new_pic->width * new_pic->height * sizeof(struct pixel);
+    header->biSizeImage = new_image->width * new_image->height * sizeof(struct pixel);
     header->biXPelsPerMeter = 2835;
     header->biYPelsPerMeter = 2835;
     header->biClrUsed = 0;
     header->biClrImportant = 0;
-    header->biWidth = new_pic->width - padd;
-    header->biHeight = new_pic->height;
+    header->biWidth = new_image->width - padding;
+    header->biHeight = new_image->height;
 
-    fwrite(image->data, 1, new_pic->height * new_pic->width * sizeof(struct pixel), out);
-    fclose(out);
+    fwrite(header, 1, sizeof(struct bmp_header), output);
+    fwrite(image->data, 1, new_image->height * new_image->width * sizeof(struct pixel), output);
+    fclose(output);
     return WRITE_OK;
+}
+
+enum read_error_code read_bmp(char const* filename, struct image* input_image){
+
+    if (filename == NULL){
+        return READ_FILENAME_NOT_FOUND;
+    }
+    FILE* input = fopen(filename, "rb");
+    if (input == NULL){
+        return READ_FILE_NOT_FOUND;
+    }
+    struct bmp_header header;
+    fread(&header, 1, sizeof(header), input);
+    if (header.bfType == 0){
+        return READ_INVALID_HEADER;
+    }
+    uint8_t* data = (uint8_t *)malloc(header.biSizeImage);
+    fseek(input, header.bOffBits, SEEK_SET);
+    fread(data, 1, header.biSizeImage, input);
+    if (data == NULL){
+        return READ_INVALID_BITS;
+    }
+    if (input_image == NULL) {
+        input_image = (struct image*)malloc(sizeof(struct image));
+    }
+    input_image->data = (struct pixel*)malloc(header.biHeight * header.biWidth * sizeof(struct pixel));
+
+    int padding = header.biWidth % 4;
+    for (uint32_t i = 0; i < header.biHeight; ++i){
+        for (uint32_t j = 0; j < header.biWidth; ++j){
+            *(input_image->data + i*header.biWidth + j) = *(struct pixel*)(((uint8_t*)data) + sizeof(struct pixel)*(i*header.biWidth + j) + padding*i);
+        }
+    }
+    input_image->height = header.biHeight;
+    input_image->width = header.biWidth;
+    fclose(input);
+    return READ_OK;
 }

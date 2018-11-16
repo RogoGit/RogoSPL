@@ -4,7 +4,8 @@
 
 #ifndef SPLLAB5_ROTATION_H
 #define SPLLAB5_ROTATION_H
+#include "bmp_pic_struct.h"
 
-struct image* rotate(const struct image* pic);
+struct image* rotate(struct image const* image);
 
 #endif //SPLLAB5_ROTATION_H

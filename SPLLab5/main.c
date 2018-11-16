@@ -1,15 +1,20 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include "bmp_pic_struct.h"
 #include "rotation.h"
 #include "in_out_bmp.h"
+#include "big_files.h"
 
 int main() {
 
+    /*rotate_bmp("hqdefault.bmp", "out.bmp");
+    image_bmp_fused_rotate_90cw("hqdefault.bmp", "out2.bmp");
+    return 0;*/
     struct image* input_image = (struct image*)malloc(sizeof(struct image));
-    printf("%zu",sizeof(&input_image));
-    switch (read_pic("hqdefault.bmp", input_image)) {
+    switch (read_bmp("hqdefault.bmp", input_image)) {
+        case READ_FILENAME_NOT_FOUND :{
+            printf("Не найден файл.\n");
+            break;
+        }
         case READ_INVALID_BITS: {
             printf("Проблемы с данными.\n");
             break;
@@ -27,9 +32,17 @@ int main() {
             break;
         }
     }
-    printf("%zu",sizeof(&input_image));
+
     struct image* output_image = rotate(input_image);
-    switch (write_pic("out.bmp", output_image)){
+    switch (write_bmp("out.bmp", output_image)){
+        case WRITE_IMAGE_NOT_FOUND: {
+            printf("Изображение для записи не найдено.\n");
+            break;
+        }
+        case WRITE_FILENAME_NOT_FOUND: {
+            printf("А тут как-то неправильно передается filename.\n");
+            break;
+        }
         case WRITE_ERROR: {
             printf("Незнаю, как такое получилось, но тут ошибка при открытии файла.\n");
             break;
@@ -43,6 +56,5 @@ int main() {
             break;
         }
     }
-    printf("Я записаль");
     return 0;
 }
