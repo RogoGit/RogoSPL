@@ -1,22 +1,16 @@
-//BY KALUGINA MARINA
-
 #include <malloc.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <memory.h>
-#include <fcntl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/mman.h>
-#include <unistd.h>
-#include <memory.h>
 #include "big_files.h"
 #include "in_out_bmp.h"
 #include "rotation.h"
 #include "bmp_pic_struct.h"
 
-void rotate_bmp(char* input_filename, char* output_filename){
+/*void rotate_bmp(char* input_filename, char* output_filename){
     FILE* input = fopen(input_filename, "rb");
     FILE* output = fopen(output_filename, "wb");
 
@@ -57,29 +51,14 @@ void rotate_bmp(char* input_filename, char* output_filename){
 
     fclose(input);
     fclose(output);
-}
+} */
 
 
 
 
-int compute_total_padding_rotated(struct bmp_header* header) {
-    return header->biWidth * (header->biHeight % 4);
-}
 
-void rotate_right_padded(const uint8_t* src, uint8_t* dst, uint32_t width, uint32_t height) {
-    for (uint32_t h = 0; h < height; h++) {
-        uint64_t src_padding = h * (width % 4);
 
-        for (uint32_t w = 0; w < width; w++) {
-            uint64_t dst_padding = (width - w) * (height % 4);
-
-            *(struct pixel*)(dst + (((width - 1 - w) * height) + h) * sizeof(struct pixel) + dst_padding) =
-                    *(struct pixel*)(src + (h * width + w) * sizeof(struct pixel) + src_padding);
-        }
-    }
-}
-
-void image_bmp_fused_rotate_90cw(const char* src_path, const char* dst_path) {
+/*void image_bmp_fused_rotate_90cw(const char* src_path, const char* dst_path) {
     struct stat src_stat;
     int src_fd = open(src_path, O_RDONLY);
     int dst_fd = open(dst_path, O_RDWR | O_CREAT | O_TRUNC, (mode_t) 0644);
@@ -95,7 +74,7 @@ void image_bmp_fused_rotate_90cw(const char* src_path, const char* dst_path) {
     size_t dst_size = header.bOffBits +
                       width * height * sizeof(struct pixel) + compute_total_padding_rotated(&header);
 
-    /* "Stretch" the destination to its full size */
+
     lseek(dst_fd, dst_size - 1, SEEK_SET);
     write(dst_fd, "", 1);
 
@@ -113,4 +92,66 @@ void image_bmp_fused_rotate_90cw(const char* src_path, const char* dst_path) {
 
     close(src_fd);
     close(dst_fd);
+}*/
+
+    /*uint8_t* read_big_file(const char* inp) {
+
+        uint8_t* sourceData;
+        struct stat source_stats;
+        int sourceFile = open(inp, O_RDONLY);
+
+        fstat(sourceFile, &source_stats);
+        size_t source_size = source_stats.st_size;
+
+        return sourceData = mmap(NULL, source_size, PROT_READ, MAP_SHARED, sourceFile, 0);
 }
+
+    void write_big_file(const char* out, uint8_t* data) {
+
+        int destFile = open(out, O_RDWR | O_CREAT | O_TRUNC, (mode_t) 0644);
+
+        struct bmp_header header = *((struct bmp_header*) data);
+
+        uint32_t width = header.biWidth;
+        uint32_t height = header.biHeight;
+        size_t destSize = header.bOffBits + width * height * sizeof(struct pixel) + compute_total_padding_rotated(&header);
+
+
+    } */
+
+
+    void handle_big_file(const char* inp, const char* out) {
+
+        struct stat sourceStats;
+
+        int sourceFile = open(inp, O_RDONLY);
+        int destFile = open(out, O_RDWR | O_CREAT | O_TRUNC, (mode_t) 0644);
+
+        fstat(sourceFile, &sourceStats);
+        size_t sourceSize = sourceStats.st_size;
+
+        uint8_t* sourceData = mmap(NULL, sourceSize, PROT_READ, MAP_SHARED, sourceFile, 0);
+        struct bmp_header header = *((struct bmp_header*) sourceData);
+
+        uint32_t width = header.biWidth;
+        uint32_t height = header.biHeight;
+        size_t destSize = header.bOffBits + width * height * sizeof(struct pixel) + compute_total_padding_rotated(&header);
+
+        lseek(destFile, destSize - 1, SEEK_SET);
+        write(destFile, "", 1);
+
+        uint8_t* destData = mmap(NULL, destSize, PROT_READ | PROT_WRITE, MAP_SHARED, destFile, 0);
+
+        rotate_right_padded(sourceData + header.bOffBits, destData + header.bOffBits, width, height);
+
+        header.biHeight = width;
+        header.biWidth = height;
+        memcpy(destData, &header, sizeof(struct bmp_header));
+
+        msync(destData, destSize, MS_SYNC);
+        munmap(sourceData, sourceSize);
+        munmap(destFile, sourceSize);
+
+        close(sourceFile);
+        close(destFile);
+    }

@@ -8,19 +8,19 @@ struct bmp_header* create_header(struct image const* pic, int padding) {
     struct bmp_header* header = (struct bmp_header*)malloc(sizeof(struct bmp_header));
 
     header->bfType = 19778;
-    header->bfileSize = pic->width * pic->height * sizeof(struct pixel) + sizeof(header);
+    header->bfileSize = pic->width * pic->height * sizeof(struct pixel)  + pic->height * padding + sizeof(struct bmp_header);
     header->bfReserved = 0;
     header->bOffBits = sizeof(struct bmp_header);
     header->biSize = 40;
-    header->biPlanes = 0;
+    header->biPlanes = 1;
     header->biBitCount = 24;
     header->biCompression = 0;
-    header->biSizeImage = pic->width * pic->height * sizeof(struct pixel);
+    header->biSizeImage = header->bfileSize - header->bOffBits;
     header->biXPelsPerMeter = 2835;
     header->biYPelsPerMeter = 2835;
     header->biClrUsed = 0;
     header->biClrImportant = 0;
-    header->biWidth = pic->width - padding;
+    header->biWidth = pic->width;
     header->biHeight = pic->height;
     return header;
 }
@@ -53,13 +53,24 @@ enum read_error_code read_picture(char const* filename, struct image* input_bmp)
     input_bmp->height = header.biHeight;
     input_bmp->width = header.biWidth;
     int padding = header.biWidth % 4;
-
-    for (row = 0; row < header.biHeight; row++){
-        for (col = 0; col < header.biWidth; col++){
-            input_bmp->data[row*header.biWidth + col] =
-                    *(struct pixel*)((data) + sizeof(struct pixel)*(row*header.biWidth + col) + padding*row);
+//
+//    for (row = 0; row < header.biHeight; row++){
+//        for (col = 0; col < header.biWidth; col++){
+//            input_bmp->data[row*header.biWidth + col] =
+//                    *(struct pixel*)((data) + sizeof(struct pixel)*(row*header.biWidth + col) + padding*row);
+//        }
+//    }
+//
+    for (uint64_t h = 0; h < header.biHeight; h++) {
+        /* Padding accumulated since the first row = num of rows * padding per row */
+        uint64_t padding = h * (header.biWidth % 4);
+        for (uint64_t w = 0; w < header.biWidth; w++) {
+            uint64_t pixel_i = h * header.biWidth + w;
+            input_bmp->data[pixel_i] = *(struct pixel*) (data + sizeof(struct pixel) * pixel_i + padding);
         }
     }
+
+    free(data);
 
 
     fclose(input_file);
@@ -78,27 +89,35 @@ enum write_error_code write_picture(char const* filename, struct image const* ou
     int row;
     int col;
 
-    struct bmp_header* header = create_header(out_bmp,padding);
+    struct bmp_header* header = create_header(out_bmp, padding);
+//
+//    struct image* new_image = (struct image*)malloc(sizeof(struct image));
+//    new_image->height = out_bmp->height;
+//    new_image->width = out_bmp->width;
+//    new_image->data = (struct pixel*)calloc(1, new_image->height * new_image->width * sizeof(struct pixel));
 
-    struct image* new_image = (struct image*)malloc(sizeof(struct image));
-    new_image->height = out_bmp->height;
-    new_image->width = out_bmp->width+padding;
-    new_image->data = (struct pixel*)calloc(1, new_image->height * new_image->width * sizeof(struct pixel));
-
-    for (row = 0; row < new_image->height; row++){
+    uint64_t data_size = out_bmp->width * out_bmp->height * sizeof(struct pixel) + out_bmp->height * (out_bmp->width % 4);
+    uint8_t* data = (uint8_t*) calloc(1, data_size);
+    for (uint64_t h = 0; h < out_bmp->height; h++) {
+        uint64_t padd = h * (out_bmp->width % 4);
+        for (uint64_t w = 0; w < out_bmp->width; w++) {
+            uint64_t pixel_i = h * out_bmp->width + w;
+            *((struct pixel *) (data + sizeof(struct pixel) * pixel_i + padd)) = out_bmp->data[pixel_i];
+        }}
+   /* for (row = 0; row < new_image->height; row++){
         for (col = 0; col < new_image->width; col++){
             if(col < new_image->width - padding) {
                 *(new_image->data + row * new_image->width + col) = *(out_bmp->data + col * out_bmp->width + row);
             }
         }
-    }
+    }*/
 
 
     FILE* output = fopen(filename, "wb+");
     if (output == NULL){ return WRITE_ERROR; }
 
     fwrite(header, 1, sizeof(struct bmp_header), output);
-    fwrite(out_bmp->data, 1, new_image->height * new_image->width * sizeof(struct pixel), output);
+    fwrite(data, 1, out_bmp->height * out_bmp->width * sizeof(struct pixel), output);
     fclose(output);
     return WRITE_OK;
 }

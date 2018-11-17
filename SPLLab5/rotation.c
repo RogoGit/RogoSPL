@@ -19,3 +19,20 @@ struct image* rotate(struct image const* rotatable){
     }
     return rotated;
 }
+
+int compute_total_padding_rotated(struct bmp_header* header) {
+    return header->biWidth * (header->biHeight % 4);
+}
+
+void rotate_right_padded(const uint8_t* src, uint8_t* dst, uint32_t width, uint32_t height) {
+    for (uint32_t h = 0; h < height; h++) {
+        uint64_t src_padding = h * (width % 4);
+
+        for (uint32_t w = 0; w < width; w++) {
+            uint64_t dst_padding = (width - w) * (height % 4);
+
+            *(struct pixel*)(dst + (((width - 1 - w) * height) + h) * sizeof(struct pixel) + dst_padding) =
+                    *(struct pixel*)(src + (h * width + w) * sizeof(struct pixel) + src_padding);
+        }
+    }
+}
