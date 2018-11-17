@@ -7,8 +7,8 @@
 int main() {
 
     struct image* inp_image = (struct image*)malloc(sizeof(struct image));
-//handle_big_file("Lights.bmp","out2.bmp"); // hqdefault.bmp  osenie-vodopadu.bmp
-    switch (read_picture("Lights.bmp", inp_image)) {
+handle_big_file("osenie-vodopadu.bmp","out2.bmp"); // hqdefault.bmp  osenie-vodopadu.bmp
+    switch (read_picture("hqdefault.bmp", inp_image)) {
 
         case READ_INVALID_BITS: {
             puts("Некорректные данные для чтения");
@@ -59,7 +59,3 @@ int main() {
     }
     return 0;
 }
-
-/*rotate_bmp("hqdefault.bmp", "out.bmp");
-    image_bmp_fused_rotate_90cw("hqdefault.bmp", "out2.bmp");
-    */

@@ -54,24 +54,12 @@ enum read_error_code read_picture(char const* filename, struct image* input_bmp)
     input_bmp->width = header.biWidth;
     int padding = header.biWidth % 4;
 //
-//    for (row = 0; row < header.biHeight; row++){
-//        for (col = 0; col < header.biWidth; col++){
-//            input_bmp->data[row*header.biWidth + col] =
-//                    *(struct pixel*)((data) + sizeof(struct pixel)*(row*header.biWidth + col) + padding*row);
-//        }
-//    }
-//
-    for (uint64_t h = 0; h < header.biHeight; h++) {
-        /* Padding accumulated since the first row = num of rows * padding per row */
-        uint64_t padding = h * (header.biWidth % 4);
-        for (uint64_t w = 0; w < header.biWidth; w++) {
-            uint64_t pixel_i = h * header.biWidth + w;
-            input_bmp->data[pixel_i] = *(struct pixel*) (data + sizeof(struct pixel) * pixel_i + padding);
+    for (row = 0; row < header.biHeight; row++){
+        for (col = 0; col < header.biWidth; col++){
+            input_bmp->data[row*header.biWidth + col] =
+                    *(struct pixel*)((data) + sizeof(struct pixel)*(row*header.biWidth + col) + padding*row);
         }
     }
-
-    free(data);
-
 
     fclose(input_file);
 
@@ -86,31 +74,20 @@ enum write_error_code write_picture(char const* filename, struct image const* ou
     if (out_bmp == NULL){ return WRITE_IMAGE_NOT_FOUND; }
 
     int padding = out_bmp->width % 4;
-    int row;
-    int col;
+    uint64_t row;
+    uint64_t col;
 
     struct bmp_header* header = create_header(out_bmp, padding);
-//
-//    struct image* new_image = (struct image*)malloc(sizeof(struct image));
-//    new_image->height = out_bmp->height;
-//    new_image->width = out_bmp->width;
-//    new_image->data = (struct pixel*)calloc(1, new_image->height * new_image->width * sizeof(struct pixel));
 
     uint64_t data_size = out_bmp->width * out_bmp->height * sizeof(struct pixel) + out_bmp->height * (out_bmp->width % 4);
     uint8_t* data = (uint8_t*) calloc(1, data_size);
-    for (uint64_t h = 0; h < out_bmp->height; h++) {
-        uint64_t padd = h * (out_bmp->width % 4);
-        for (uint64_t w = 0; w < out_bmp->width; w++) {
-            uint64_t pixel_i = h * out_bmp->width + w;
+    for ( row = 0; row < out_bmp->height; row++) {
+        uint64_t padd = row * (out_bmp->width % 4);
+        for (col = 0; col < out_bmp->width; col++) {
+            uint64_t pixel_i = row * out_bmp->width + col;
             *((struct pixel *) (data + sizeof(struct pixel) * pixel_i + padd)) = out_bmp->data[pixel_i];
-        }}
-   /* for (row = 0; row < new_image->height; row++){
-        for (col = 0; col < new_image->width; col++){
-            if(col < new_image->width - padding) {
-                *(new_image->data + row * new_image->width + col) = *(out_bmp->data + col * out_bmp->width + row);
-            }
         }
-    }*/
+    }
 
 
     FILE* output = fopen(filename, "wb+");
