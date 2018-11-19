@@ -12,9 +12,9 @@
 #define ROGOSPLLAB6_MEM_ALLOC_H
 
 #define HEAP_START ((void*)0x04040000)
-#define MINIMAL_BLOCK_SIZE ((char) 2)
+#define MINIMAL_HEAP_SIZE (sysconf(_SC_PAGESIZE))
 #define CHUNK_ALIGN 8
-#define CHUNK_MIN_SIZE (sizeof(chunk_head_t) + CHUNK_ALIGN)
+#define CHUNK_MIN_SIZE (sizeof(struct mem) + CHUNK_ALIGN)
 
 #define _USE_MISC
 
