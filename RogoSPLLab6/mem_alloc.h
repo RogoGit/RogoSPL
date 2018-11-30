@@ -13,9 +13,9 @@
 
 #define HEAP_START ((void*)0x04040000)
 #define MINIMAL_HEAP_SIZE (sysconf(_SC_PAGESIZE))
-#define CHUNK_ALIGN 8
-#define CHUNK_MIN_SIZE (sizeof(struct mem) + CHUNK_ALIGN)
-
+//#define CHUNK_ALIGN 8
+//#define CHUNK_MIN_SIZE (sizeof(struct mem) + CHUNK_ALIGN)
+#define CHUNK_MIN_SIZE (sizeof(struct mem))
 #define _USE_MISC
 
 struct mem {
@@ -34,7 +34,7 @@ struct mem {
 
 void* rogalloc( size_t query );
 void rogoFree( void* memChunk );
-void* heap_init( size_t initial_size );
+void* heap_space_init();
 #define DEBUG_FIRST_BYTES 4
 void memalloc_debug_struct_info( FILE* f,
                                  struct mem const* const address );
