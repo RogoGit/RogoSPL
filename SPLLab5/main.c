@@ -1,13 +1,37 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "rotation.h"
 #include "in_out_bmp.h"
-#include "big_files.h"
 
 int main() {
 
     struct image* inp_image = (struct image*)malloc(sizeof(struct image));
-handle_big_file("osenie-vodopadu.bmp","out2.bmp"); // hqdefault.bmp  osenie-vodopadu.bmp
+
+    struct image* inp1 = (struct image*)malloc(sizeof(struct image));
+    read_picture("lain_guy-1x1.bmp",inp1);
+
+    struct image* inp2 = (struct image*)malloc(sizeof(struct image));
+    read_picture("lain_guy-1x2 .bmp",inp2);
+
+    struct image* inp3 = (struct image*)malloc(sizeof(struct image));
+    read_picture("lain_guy-2x1.bmp",inp3);
+
+    struct image* inp4 = (struct image*)malloc(sizeof(struct image));
+    read_picture("lain_guy-3k.bmp",inp4);
+
+    struct image* out1 = rotate(inp1);
+    struct image* out2 = rotate(inp2);
+    struct image* out3 = rotate(inp3);
+    struct image* out4 = rotate(inp4);
+
+    write_picture("out11.bmp", out1);
+    write_picture("out12.bmp", out2);
+    write_picture("out21.bmp", out3);
+    write_picture("out3k.bmp", out4);
+
+
+    // hqdefault.bmp  osenie-vodopadu.bmp
     switch (read_picture("hqdefault.bmp", inp_image)) {
 
         case READ_INVALID_BITS: {
