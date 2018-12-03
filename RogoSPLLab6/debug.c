@@ -6,8 +6,7 @@
 #include "mem_alloc.h"
 #include <stdlib.h>
 
-void memalloc_debug_struct_info( FILE* f,
-                                 struct mem const* const address ) {
+void memalloc_debug_struct_info( FILE* f, struct mem const* const address ) {
     size_t i;
     fprintf( f,
              "start: %p, size: %lu, is_free: %d\n",

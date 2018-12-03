@@ -35,8 +35,7 @@ void rogoFree(void* memChunk) {
 
 void* rogalloc(size_t query) {
 
-    if (query % CHUNK_ALIGN != 0)
-        query += CHUNK_ALIGN - (query % CHUNK_ALIGN);
+    if (query % CHUNK_ALIGN != 0) query += CHUNK_ALIGN - (query % CHUNK_ALIGN); //making size to 8
 
     struct mem* chunk = (struct mem*) heap_space_start;
 
