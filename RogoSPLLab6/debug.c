@@ -10,7 +10,7 @@ void memalloc_debug_struct_info( FILE* f,
                                  struct mem const* const address ) {
     size_t i;
     fprintf( f,
-             "start: %p\nsize: %lu\nis_free: %d\n",
+             "start: %p, size: %lu, is_free: %d\n",
              (void*)address,
              address-> capacity,
              address-> is_free );

@@ -35,6 +35,9 @@ void rogoFree(void* memChunk) {
 
 void* rogalloc(size_t query) {
 
+    if (query % CHUNK_ALIGN != 0)
+        query += CHUNK_ALIGN - (query % CHUNK_ALIGN);
+
     struct mem* chunk = (struct mem*) heap_space_start;
 
     //making one big block from lots of empty
@@ -82,20 +85,20 @@ void* rogalloc(size_t query) {
     size_t remaining_capacity = chunk->capacity - query;
 
     if (remaining_capacity < CHUNK_MIN_SIZE) {
-        //skip to usable area
+        //skip header to usable area
         return (void *) (chunk + 1);
     }
 
     chunk->capacity = query;
     char* chunk_end = ((char*) chunk) + sizeof(struct mem) + query;
 
-    struct mem* succ_chnk = (struct mem*) chunk_end;
-    succ_chnk->next = chunk->next;
-    succ_chnk->capacity = remaining_capacity - sizeof(struct mem);
-    succ_chnk->is_free = true;
+    struct mem* new_chunk = (struct mem*) chunk_end;
+    new_chunk->next = chunk->next;
+    new_chunk->capacity = remaining_capacity - sizeof(struct mem);
+    new_chunk->is_free = true;
     chunk->next = (struct mem*) chunk_end;
 
     return (void*) (chunk + 1);
-    
+
 
 }
