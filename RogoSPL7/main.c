@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <unistd.h>
+#include <stdint.h>
 #include "BMP_IO.h"
+#include "sepia_filter .h"
 
 int main() {
 
@@ -30,7 +35,21 @@ int main() {
             break;
         }
     }
+
     struct image* out_image = inp_image;
+
+    struct rusage r;
+    struct timeval start;
+    struct timeval end;
+    getrusage(RUSAGE_SELF, &r );
+    start = r.ru_utime;
+   // for( uint64_t i = 0; i < 100000000; i++ );
+    sepia_c_inplace(inp_image);
+    getrusage(RUSAGE_SELF, &r );
+    end = r.ru_utime;
+    long res = ((end.tv_sec - start.tv_sec) * 1000000L) +
+               end.tv_usec - start.tv_usec;
+    printf( "Time elapsed in microseconds: %ld\n", res );
 
     switch (write_picture("out.bmp", out_image)){
 

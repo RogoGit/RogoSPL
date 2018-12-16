@@ -3,4 +3,4 @@ project(RogoSPL7 C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(RogoSPL7 main.c BMP_Struct.h BMP_IO.c BMP_IO.h)
+add_executable(RogoSPL7 main.c BMP_Struct.h BMP_IO.c BMP_IO.h "sepia_filter .c" "sepia_filter .h")
