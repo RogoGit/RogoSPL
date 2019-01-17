@@ -1,7 +1,14 @@
 //
+// Created by dell on 17.01.19.
+//
+
+//
 // Created by dell on 16.12.18.
 //
 
+#include <stdint.h>
+#include "BMP_Struct.h"
+#include "BMP_IO.h"
 #include "sepia_filter .h"
 
 static unsigned char sat(uint64_t x) {
@@ -23,4 +30,19 @@ void sepia_c_inplace( struct image* img ) {
     for( y = 0; y < img->height; y++ )
         for( x = 0; x < img->width; x++ )
             sepia_one( img->data + y * img->width + x); //
+}
+
+void sepia_filter_sse(struct pixel* pixel, uint32_t size);
+
+void sepia_sse_inplace(struct image *img) {
+    if (img->height * img->width < 4){
+        for (int i = 0; i < img->height * img->width; ++i){
+            sepia_one(img->data + i);
+        }
+        return;
+    }
+    sepia_filter_sse(img->data, img->height * img->width - (img->height * img->width) % 4);
+    for (int i  = img->height * img->width - (img->height * img->width) % 4; i < img->height * img->width; ++i){
+        sepia_one(img->data + i);
+    }
 }

@@ -12,7 +12,7 @@ int main() {
 
     struct image* inp_image = (struct image*)malloc(sizeof(struct image));
 
-    switch ( read_picture("lain_guy-3k.bmp",inp_image)) {
+    switch ( read_picture("hqdefault.bmp",inp_image)) {
 
         case READ_INVALID_BITS: {
             puts("Некорректные данные для чтения");
@@ -37,6 +37,7 @@ int main() {
     }
 
     struct image* out_image = inp_image;
+    struct image* out_image2 = inp_image;
 
     struct rusage r;
     struct timeval start;
@@ -74,5 +75,40 @@ int main() {
             break;
         }
     }
+
+    getrusage(RUSAGE_SELF, &r );
+    start = r.ru_utime;
+    // for( uint64_t i = 0; i < 100000000; i++ );
+     sepia_sse_inplace(inp_image);
+    getrusage(RUSAGE_SELF, &r );
+    end = r.ru_utime;
+    long res2 = ((end.tv_sec - start.tv_sec) * 1000000L) +
+               end.tv_usec - start.tv_usec;
+    printf( "Time elapsed in microseconds: %ld\n", res2 );
+
+    switch (write_picture("out2.bmp", out_image2)){
+
+        case WRITE_FILENAME_NOT_FOUND: {
+            puts("Файл для записи не найден");
+            break;
+        }
+        case WRITE_IMAGE_NOT_FOUND: {
+            puts("Записывать нечего");
+            break;
+        }
+        case WRITE_ERROR: {
+            puts("Ошибка записи");
+            break;
+        }
+        case WRITE_OK: {
+            puts("Изображение записано");
+            break;
+        }
+        default: {
+            puts("Непредвиденная ошибка записи");
+            break;
+        }
+    }
+
     return 0;
 }

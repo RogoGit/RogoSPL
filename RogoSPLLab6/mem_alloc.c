@@ -24,7 +24,7 @@ void rogoFree(void* memChunk) {
 
     // making one big chunk from several free
 
-    struct mem* chunk = (struct mem*) ((char*) memChunk - sizeof(struct mem));
+    struct mem *chunk = (struct mem *) ((char *) memChunk - sizeof(struct mem));
     chunk->is_free = true;
     while (chunk->next != NULL && chunk->next->is_free) {
         chunk->capacity = chunk->capacity + chunk->next->capacity + sizeof(struct mem);
@@ -34,6 +34,8 @@ void rogoFree(void* memChunk) {
 }
 
 void* rogalloc(size_t query) {
+
+  //  if (query <= 0) return NULL;
 
     if (query % CHUNK_ALIGN != 0) query += CHUNK_ALIGN - (query % CHUNK_ALIGN); //making size to 8
 
