@@ -92,7 +92,23 @@ sepia_filter_sse:
   movaps xmm_green_channel_rbgr, [green_channel_rbgr]
   movaps xmm_red_channel_rbgr, [red_channel_rbgr]
 
+;xor r13,r13
+;xor r14,r14
+
+;mov r8, 30
+;mov r9, 360
+
 sepia_filter_sse_loop:
+
+ ; add r13,4
+
+  ;cmp r13,r8
+  ;jg sepia_filter_sse_loop
+
+ ; shr r10, 90
+
+  ; cmp ,r8
+   ;jb sepia_filter_sse_loop
 
   mov rdx, [pointer]      ; get first pixel
 

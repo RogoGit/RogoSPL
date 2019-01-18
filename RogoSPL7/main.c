@@ -12,7 +12,7 @@ int main() {
 
     struct image* inp_image = (struct image*)malloc(sizeof(struct image));
 
-    switch ( read_picture("hqdefault.bmp",inp_image)) {
+    switch ( read_picture("osenie-vodopadu.bmp",inp_image)) {
 
         case READ_INVALID_BITS: {
             puts("Некорректные данные для чтения");
@@ -44,7 +44,7 @@ int main() {
     struct timeval end;
     getrusage(RUSAGE_SELF, &r );
     start = r.ru_utime;
-   for( uint64_t i = 0; i < 200; i++ )
+   //for( uint64_t i = 0; i < 20; i++ )
    sepia_c_inplace(inp_image);
     getrusage(RUSAGE_SELF, &r );
     end = r.ru_utime;
@@ -78,7 +78,7 @@ int main() {
 
     getrusage(RUSAGE_SELF, &r );
     start = r.ru_utime;
-     for( uint64_t i = 0; i < 200; i++ )
+//     for( uint64_t i = 0; i < 20; i++ )
      sepia_sse_inplace(inp_image);
     getrusage(RUSAGE_SELF, &r );
     end = r.ru_utime;
