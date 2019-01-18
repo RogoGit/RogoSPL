@@ -44,8 +44,8 @@ int main() {
     struct timeval end;
     getrusage(RUSAGE_SELF, &r );
     start = r.ru_utime;
-   // for( uint64_t i = 0; i < 100000000; i++ );
-    sepia_c_inplace(inp_image);
+   for( uint64_t i = 0; i < 200; i++ )
+   sepia_c_inplace(inp_image);
     getrusage(RUSAGE_SELF, &r );
     end = r.ru_utime;
     long res = ((end.tv_sec - start.tv_sec) * 1000000L) +
@@ -78,7 +78,7 @@ int main() {
 
     getrusage(RUSAGE_SELF, &r );
     start = r.ru_utime;
-    // for( uint64_t i = 0; i < 100000000; i++ );
+     for( uint64_t i = 0; i < 200; i++ )
      sepia_sse_inplace(inp_image);
     getrusage(RUSAGE_SELF, &r );
     end = r.ru_utime;
