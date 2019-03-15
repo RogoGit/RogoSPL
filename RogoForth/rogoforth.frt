@@ -59,8 +59,20 @@
 
 ( 7 TASK )
 
-
-
+: concatenate ( str1, str2 )
+  swap ( will be needed to convert from reversed to normal order )
+  2dup ( save 2 strings, they will be destroyed after length count )
+  count swap ( get length and switch to another string  ) 
+  count ( get second length )
+  ( now we have to allot [sum strings length * 1 byte + 1 for null terminator] bytes )
+  1 + + heap-alloc 
+  dup >r swap ( sended to return address stack to get in the end ) 
+  2dup 
+  string-copy ( copy string ) count + ( move pointer to next address ) swap ( cause string-copy args are dest, source - we have to reverse ) string-copy
+  r> ( get back our string )
+  dup
+  prints
+  ;
 
 ( SECOND PART )
 
