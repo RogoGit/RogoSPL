@@ -1,5 +1,7 @@
 ( FIRST PART )
 
+( 1 and 2 - just read)
+
 ( 3 TASK )
 ( words to check if even )
 : is_num_even 2 % not ;
@@ -45,6 +47,21 @@
 
 ( 5 TASK )
 
+: is_num_prime_allot 
+    is_num_prime
+    1 ( byte ) allot ( of memory )
+    swap over ( a b -> b a b ) 
+    c! dup c@ ." Result " .  ."  Memory cell " . ;
+
+( 6 TASK )
+
+ ( Just reading  )
+
+( 7 TASK )
+
+
+
+
 ( SECOND PART )
 
 ( m" Rogalenko" string-hash
@@ -55,6 +72,35 @@ m" rogalenko" string-hash
 61884  )
 
 ( VARIANT 0 )
+
+: collatz ( n ) 
+   dup . 32 emit ( space )
+   repeat
+     ( if even - div 2 )
+     dup is_num_even if
+       2 /
+     else
+      ( eles - 3n + 1  )
+      3 * 1 +
+     endif
+     dup . 32 emit
+    ( if 1 - we finished )
+     dup 1 > not
+   until
+  ( make stack free )
+   drop ;
+
+     	
+
+
+
+
+
+
+
+
+
+
 
 
 
