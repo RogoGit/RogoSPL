@@ -26,13 +26,13 @@
 ; ret_stack will be defined in another file
 
 %macro ret_push 1
-sub ret_stack, 8 ; making memory address lesser - getting ready for one new stack element
-mov qword [ret_stack], %1 ; writing value from macro argument by address in ret_stack 
+   sub ret_stack, 8 ; making memory address lesser - getting ready for one new stack element
+   mov qword [ret_stack], %1 ; writing value from macro argument by address in ret_stack 
 %endmacro
 
 %macro ret_pop 1
-mov %1, qword [ret_stack]
-add ret_stack, 8 ; removing top element of return stack
+   mov %1, qword [ret_stack]
+   add ret_stack, 8 ; removing top element of return stack
 %endmacro
 
 
