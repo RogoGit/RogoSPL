@@ -214,6 +214,22 @@ native docol, "docol" ; this is the implementation of any colon-word
   jmp next
 
 
+; ------------------ forth syscall --------------------- 
+
+native syscall, "syscall" ; ( call_num a1 a2 a3 a4 a5 a6 -- new_rax new_rdx) 
+  ; executes syscall The following registers store arguments (according to ABI) rdi , rsi , rdx , r10 , r8 and r9
+  pop r9
+  pop r8
+  pop r10
+  pop rdx
+  pop rsi
+  pop rdi
+  pop rax
+  syscall
+  push rax
+  push rdx
+  jmp next
+
 ; ---------------- forth special words ----------------
 
 native lit, "lit" ; push a value immediately following this XT
