@@ -185,23 +185,52 @@ native execute, "execute" ; ( xt -- ) execute word with this execution token on 
   jmp [r15] ; going by address stored in poped value
 
 
+; ---------------- execution control -------------------
+
+native exit, "exit" ; exit from colon word
+  ret_pop pc ; write return stack head to program counter - next instruction
+  jmp next
+
+native branch, "branch" ; jump to a absolute location. Using it interactively is quasi-impossible; using it as a low-level primitive to implement if and similar constructs is much more convenient
+  ; compile-only word
+  mov pc, [pc]
+  jmp next
+
+native branch_0, "0branch" ; jump to a location if TOS = 0. Location is calculated in a similar way
+  ; compile-only word
+  pop r15
+  test r15, r15
+  jnz .skip ; not 0 - skipping
+  mov pc, [pc] ; ok - doing like in branch
+  jmp next
+  .skip:
+    add pc, 8 ; adding to program counter - going to next instruction
+    jmp next
+
+native docol, "docol" ; this is the implementation of any colon-word
+  ret_push pc ; program counter -> to return stack
+  add w,8
+  mov pc, w
+  jmp next
+
+
 ; ---------------- forth special words ----------------
 
-; native "forth-dp", forth-dp  DP address - link to first free memory cell for user data - global data pointer
-  
+native lit, "lit" ; push a value immediately following this XT
+  push qword [pc]
+  add pc, 8
+  jmp next
 
+; native forth-dp, "forth-dp"  DP address - link to first free memory cell for user data - global data pointer
 
+native forth-sp, "forth-sp" ; same as push rsp
+  push rsp
+  jmp next
+
+native forth-stack-base, "forth-stack-base" ; push to stack [stack_start]
+  ; stack_start stores a saved address of data stack
+  push [stack_start]
+  jmp next
 
  
-
-
-
-
-
-
-
-
-
-
-
-
+  
