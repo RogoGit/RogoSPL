@@ -91,4 +91,61 @@ push 0 ; condition is false
 jmp next
 
 
+; ------------- logical operations ----------------
+
+native not, "not" ;( a -- a' ) a' = 0 if a != 0 a' = 1 if a == 0
+pop r15
+test r15,r15
+jz .zero
+push 0 
+jmp next
+.zero:
+push 1
+jmp next
+
+native and, "and" ;( a b -- [a&b])
+pop r15
+and [rsp], r15 ; bitwise and r15 with new top - value in memory cell referenced by rsp
+jmp next
+
+native or, "or" ;( a b -- [a|b])
+pop r15
+or [rsp], r15 ; bitwise or r15 with new top - value in memory cell referenced by rsp
+jmp next
+
+native land, "land" ;( a b -- [a&&b])
+pop r15
+pop r14
+test r15,r15
+jz .no
+push r14
+jmp next
+.no:
+push r15
+jmp next
+
+native lor, "lor" ;( a b -- [a||b])
+pop r15
+pop r14
+test r15,r15
+jnz .yes
+push r14
+jmp next
+.yes:
+push r15
+jmp next
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
