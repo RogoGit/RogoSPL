@@ -136,7 +136,30 @@ push r15
 jmp next
 
 
+; -------------- return stack operations ------------
 
+native to_ret, ">r" ; pop from data stack into return stack
+pop r15
+ret_push r15 ; macro from forth_macro.inc
+jmp next
+
+native from_ret, "r>" ; push from return stack into data stack
+ret_pop r15 ; macro from forth_macro.inc
+push r15
+jmp next
+
+native fetch_ret, "r@" ; non-destructive copy from the top of return stack to the top of data stack
+push qword [ret_stack] ; ret_stack will be defined in another file
+jmp next
+
+
+
+
+
+
+
+
+ 
 
 
 
