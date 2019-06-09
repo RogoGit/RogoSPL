@@ -179,11 +179,17 @@ native fetch_byte, "c@" ;( addr -- char ) read one byte starting at addr
   push r15
   jmp next
 
+native word, "word" ; ( addr -- len ) read word and store it starting at address + word length pushed into stack
+  pop rdi
+  call read_word
+  push rdx
+  jmp next
+
 native execute, "execute" ; ( xt -- ) execute word with this execution token on TOS
   pop r15
   mov w, r15 ; w - address of current instruction handler, will be defined in another file  
   jmp [r15] ; going by address stored in poped value
-
+  
 
 ; ---------------- execution control -------------------
 
@@ -196,7 +202,7 @@ native branch, "branch" ; jump to a absolute location. Using it interactively is
   mov pc, [pc]
   jmp next
 
-native branch_0, "0branch" ; jump to a location if TOS = 0. Location is calculated in a similar way
+native branch0, "0branch" ; jump to a location if TOS = 0. Location is calculated in a similar way
   ; compile-only word
   pop r15
   test r15, r15
@@ -239,6 +245,27 @@ interpreter_stub:
     dq exec_token_lit, 0    
     dq exec_token_interpret_fd
     dq exec_token_bye
+	
+	
+colon interpret_fd, "interpret-fd"
+    dq exec_token_lit, in_fd, exec_token_fetch, exec_token_to_ret
+    dq exec_token_lit, in_fd
+    dq exec_token_write
+    .loop:
+    dq exec_token_inbuf, exec_token_word
+    branch0 .end_of_input
+
+    dq exec_token_inbuf
+    dq exec_token_interpret
+
+    branch .loop
+
+    .end_of_input:
+    dq exec_token_from_ret
+    dq exec_token_lit, in_fd, exec_token_write
+    dq exec_token_exit
+	
+	
 
 section .data
     stack_base: dq 0

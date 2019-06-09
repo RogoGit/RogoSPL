@@ -56,3 +56,15 @@ section .data
 colon %1, %2, 0 ; colon macro with no flags
 %endmacro
 
+; ------------- branch macro --------------------
+
+%macro branch 1 
+dq exec_token_branch
+dq %1
+%endmacro
+
+%macro branch0 1 
+dq exec_token_branch0
+dq %1 
+%endmacro
+
