@@ -213,6 +213,37 @@ native docol, "docol" ; this is the implementation of any colon-word
   mov pc, w
   jmp next
 
+; -------------------- initialization -------------------
+
+const inbuf, input_buf
+const mem, user_mem
+const lw, lw
+const state, state
+
+const here, [here]
+const in_fd, in_fd
+const dp, dp
+
+section .rodata
+interpreter_stub:
+    dq exec_token_lit, 0    
+    dq exec_token_interpret_fd
+    dq exec_token_bye
+
+section .data
+    stack_base: dq 0
+
+native init, "init"
+    mov qword [state], 0
+    mov ret_stack, ret_stack_start
+    mov pc, interpreter_stub
+    cmp qword [stack_base], 0
+    je  .first
+    mov rsp, [stack_base]
+    jmp next
+    .first:
+    mov [stack_base], rsp
+    jmp next
 
 ; ------------------ forth syscall --------------------- 
 
@@ -239,14 +270,14 @@ native lit, "lit" ; push a value immediately following this XT
 
 ; native forth-dp, "forth-dp"  DP address - link to first free memory cell for user data - global data pointer
 
-native forth-sp, "forth-sp" ; same as push rsp
-  push rsp
-  jmp next
+;native forth-sp, "forth-sp" ; same as push rsp
+;  push rsp
+;  jmp next
 
-native forth-stack-base, "forth-stack-base" ; push to stack [stack_start]
+;native forth-stack-base, "forth-stack-base" ; push to stack [stack_start]
   ; stack_start stores a saved address of data stack
-  push [stack_start]
-  jmp next
+;  push [stack_start]
+ ; jmp next
 
  
   
