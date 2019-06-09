@@ -153,6 +153,21 @@ native fetch_ret, "r@" ; non-destructive copy from the top of return stack to th
     jmp next
 
 
+; --------------- words definition -------------------
+
+native comma, "," ; ( x -- ) add x to word being defined
+    mov rax, [here]
+    pop qword [rax]
+    add qword [here], 8
+    jmp next
+
+native char_comma, "c," ; ( c -- ) add a byte to the word being defined
+    mov rax, [here]
+    pop rdx
+    mov [rax], dl
+    add qword[here], 1
+    jmp next
+
 ; ------------- working with memory ------------------
 
 native fetch, "@" ;( addr -- value ) fetch value from memory
@@ -184,6 +199,51 @@ native word, "word" ; ( addr -- len ) read word and store it starting at address
     call read_word
     push rdx
     jmp next
+	
+native number, "number" ; ( str -- len ) parse string to number
+    pop rdi
+    call parse_int
+    push rax
+    push rdx
+    jmp next	
+
+native find, "find" ; ( str -- header_addr )
+    mov rsi, [lw]
+    mov rax, [state]
+    test rax, rax
+    jz .loop
+    mov rsi, [rsi]
+    .loop:
+        mov rdi, [rsp]
+        push rsi
+        add rsi, 9
+        call string_equals
+        pop rsi
+        test rax, rax
+        jnz .found
+        mov rsi, [rsi]
+        test rsi, rsi
+        jnz .loop
+    .not_found:
+        mov qword [rsp], 0
+        jmp next
+    .found:
+        mov [rsp], rsi
+        jmp next
+		
+native cfa, "cfa" ; ( word_addr -- exec_token ) converting to execution token
+    pop rsi
+    add rsi, 9
+    .loop:
+        mov al, [rsi]
+        test al, al
+        jz .end
+        inc rsi
+        jmp .loop
+    .end:
+        add rsi, 2
+        push rsi
+        jmp next		
 
 native execute, "execute" ; ( xt -- ) execute word with this execution token on TOS
     pop r15
@@ -266,27 +326,21 @@ interpreter_stub:
     dq exec_token_interpret_fd
     dq exec_token_bye
 	
-	
 colon interpret_fd, "interpret-fd"
     dq exec_token_lit, in_fd, exec_token_fetch, exec_token_to_ret
     dq exec_token_lit, in_fd
     dq exec_token_write
     .loop:
-    dq exec_token_inbuf, exec_token_word
-    branch0 .end_of_input
-
-    dq exec_token_inbuf
-    dq exec_token_interpret
-
-    branch .loop
-
+        dq exec_token_inbuf, exec_token_word
+        branch0 .end_of_input
+        dq exec_token_inbuf
+        dq exec_token_interpret
+        branch .loop
     .end_of_input:
-    dq exec_token_from_ret
-    dq exec_token_lit, in_fd, exec_token_write
-    dq exec_token_exit
+        dq exec_token_from_ret
+        dq exec_token_lit, in_fd, exec_token_write
+        dq exec_token_exit
 	
-	
-
 section .data
     stack_base: dq 0
 
