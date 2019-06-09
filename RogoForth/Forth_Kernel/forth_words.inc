@@ -1,3 +1,4 @@
+%include "lib.inc"
 %include "forth_macro.inc"
 
 ; ----------- basic stack operations -------------
@@ -154,7 +155,48 @@ native fetch_ret, "r@" ; non-destructive copy from the top of return stack to th
     jmp next
 
 
+; --------------- new words creation -----------------
+
+native create_word, "create" ; adding new word to dictionary
+    mov rcx, [last_word]
+    mov rsi, [here]
+    mov [rsi], rcx
+    mov [last_word], rsi
+    add rsi, 8
+    mov byte [rsi], 0
+    inc rsi
+    pop rdi
+    push rsi
+    call string_copy
+    pop rsi
+    push rsi
+    mov rdi, rsi
+    call string_length
+    pop rsi
+    add rsi, rax
+    inc rsi
+    pop rax
+    mov [rsi], al
+    inc rsi
+    mov [here], rsi
+    jmp next
+
+
 ; --------------- words definition -------------------
+
+colon colon, ":" ; read and define word
+    .again:
+    dq exec_token_inbuf, exec_token_word
+    branch0 .again
+    dq exec_token_lit, 0, exec_token_inbuf, exec_token_create
+    dq exec_token_lit, 1, exec_token_state, exec_token_write
+    dq exec_token_lit, impl_docol, exec_token_comma
+    dq exec_token_exit
+
+colon semicolon, ";", 1 ; end definition
+    dq exec_token_lit, 0, exec_token_state, exec_token_write
+    dq exec_token_lit, exec_token_exit, exec_token_comma
+    dq exec_token_exit
 
 native comma, "," ; ( x -- ) add x to word being defined
     mov rax, [here]
@@ -168,6 +210,8 @@ native char_comma, "c," ; ( c -- ) add a byte to the word being defined
     mov [rax], dl
     add qword[here], 1
     jmp next
+	
+	
 
 ; ------------- working with memory ------------------
 
