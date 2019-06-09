@@ -1,10 +1,9 @@
 global _start
 
 %include "lib.inc"
-%include "forth_macro.inc"
 
-%define pc r11 ; let it be r11
-%define w r12 ; let it be r12
+%define pc r11 
+%define w r12
 %define ret_stack r13
 
 section .text
@@ -21,7 +20,7 @@ lw: dq last_word       ; stores a pointer to the last word in dictionary
 dp: dq user_mem        ; current global data pointer
 here: dq user_dict
 stack_start:  dq 0     ; stores a saved address of data stack
-forth_init: dq token_selector 
+;forth_init: dq token_selector 
 
 section .bss
 
@@ -36,10 +35,11 @@ state: resq 1          ; changes to 1 if compiling, 0 by default
 section .text
 
 _start: 
-    mov ret_stack, ret_stack_start
-    mov [stack_start], rsp
-    mov pc, forth_init
-    jmp next
+	jmp impl_init
+ ;   mov ret_stack, ret_stack_start
+  ;  mov [stack_start], rsp
+   ; mov pc, forth_init
+    ;jmp next
 
 next:                  
     mov w, pc

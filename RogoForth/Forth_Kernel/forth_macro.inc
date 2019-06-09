@@ -1,3 +1,6 @@
+%ifndef _MACRO_
+%define _MACRO_
+
 ; -------------- working with native words ------------
 
 %define last_word 0 ; last word
@@ -67,3 +70,12 @@ section .data
     dq %1 
 %endmacro
 
+; ------------- const -------------------------
+%macro const 2
+%defstr %%__cnst_str %1
+native %%__cnst_str, %1 
+    push qword %2
+    jmp next
+%endmacro
+
+%endif

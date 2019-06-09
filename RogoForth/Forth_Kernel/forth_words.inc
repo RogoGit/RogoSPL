@@ -1,3 +1,4 @@
+%include "forth_macro.inc"
 
 ; ----------- basic stack operations -------------
 
@@ -300,7 +301,7 @@ colon printc, "printc" ; prints a certain amount of symbols from string
     	dq exec_token_from_ret, exec_token_lit, 1, exec_token_minus, exec_token_to_ret
     	branch .loop
     .exit:
-    	dq exec_token_from_r, exec_token_drop, exec_token_drop, exec_token_exit
+    	dq exec_token_from_ret, exec_token_drop, exec_token_drop, exec_token_exit
 
 colon prints, "prints" ; print a null-terminated string
      dq exec_token_dup, exec_token_count, exec_token_printc, exec_token_exit
@@ -344,56 +345,6 @@ native docol, "docol" ; this is the implementation of any colon-word
     mov pc, w
     jmp next
 
-; -------------------- initialization -------------------
-
-const inbuf, input_buf
-const mem, user_mem
-const lw, lw
-const state, state
-
-const here, [here]
-const in_fd, in_fd
-const dp, dp
-
-section .rodata
-interpreter_stub:
-    dq exec_token_lit, 0    
-    dq exec_token_interpret_fd
-    dq exec_token_bye
-	
-colon interpret_fd, "interpret-fd"
-    dq exec_token_lit, in_fd, exec_token_fetch, exec_token_to_ret
-    dq exec_token_lit, in_fd
-    dq exec_token_write
-    .loop:
-        dq exec_token_inbuf, exec_token_word
-        branch0 .end_of_input
-        dq exec_token_inbuf
-        dq exec_token_interpret
-        branch .loop
-    .end_of_input:
-        dq exec_token_from_ret
-        dq exec_token_lit, in_fd, exec_token_write
-        dq exec_token_exit
-	
-section .data
-    stack_base: dq 0
-
-native init, "init"
-    mov qword [state], 0
-    mov ret_stack, ret_stack_start
-    mov pc, interpreter_stub
-    cmp qword [stack_base], 0
-    je  .first
-    mov rsp, [stack_base]
-    jmp next
-    .first:
-    mov [stack_base], rsp
-    jmp next
-	
-; ------------------ interpretation --------------------
-
-
 ; ------------------ forth syscall --------------------- 
 
 native syscall, "syscall" ; ( call_num a1 a2 a3 a4 a5 a6 -- new_rax new_rdx) 
@@ -428,5 +379,101 @@ native lit, "lit" ; push a value immediately following this XT
 ;  push [stack_start]
  ; jmp next
 
- 
-  
+; -------------------- initialization -------------------
+
+const inbuf, input_buf
+const mem, user_mem
+const lw, lw
+const state, state
+
+const here, [here]
+const in_fd, in_fd
+const dp, dp
+	
+section .data
+    stack_base: dq 0
+
+native init, "init"
+    mov qword [state], 0
+    mov ret_stack, ret_stack_start
+    mov pc, interpreter_stub
+    cmp qword [stack_base], 0
+    je  .first
+    mov rsp, [stack_base]
+    jmp next
+    .first:
+    mov [stack_base], rsp
+    jmp next
+	
+; ------------------ interpretation --------------------
+
+section .rodata
+interpreter_stub:
+    dq exec_token_lit, 0    
+    dq exec_token_interpret_fd
+    dq exec_token_bye
+	
+colon interpret_fd, "interpret-fd"
+    dq exec_token_lit, in_fd, exec_token_fetch, exec_token_to_ret
+    dq exec_token_lit, in_fd
+    dq exec_token_write
+    .loop:
+        dq exec_token_inbuf, exec_token_word
+        branch0 .end_of_input
+        dq exec_token_inbuf
+        dq exec_token_interpret
+        branch .loop
+    .end_of_input:
+        dq exec_token_from_ret
+        dq exec_token_lit, in_fd, exec_token_write
+        dq exec_token_exit
+
+colon interpret, "interpret"
+	.start:
+        dq exec_token_dup, exec_token_find ; find word
+    	dq exec_token_dup
+    	branch0 .number  ; if not found parse as number
+    	dq exec_token_cfa
+    	dq exec_token_state, exec_token_fetch ; compiling
+    	branch0 .interpr
+		; immediate
+    	dq exec_token_dup
+    	dq exec_token_lit, 1, exec_token_minus, exec_token_fetch_byte, exec_token_not
+    	branch0 .interpr
+    	; compile
+    	dq exec_token_swap, exec_token_drop
+    	dq exec_token_comma
+    	dq exec_token_exit
+	.interpr:
+    	dq exec_token_swap, exec_token_drop
+    	dq exec_token_execute
+    	dq exec_token_exit
+    .number:
+    	dq exec_token_drop, exec_token_dup
+    	dq exec_token_number 
+    	branch0 .not_found
+    	dq exec_token_swap, exec_token_drop
+    	dq exec_token_state, exec_token_fetch  ; finish interpr
+    	branch0 .exit
+        ; when compiling, check further
+    	dq exec_token_here, exec_token_lit, 8, exec_token_minus, exec_token_fetch
+    	dq exec_token_dup
+    	dq exec_token_lit, exec_token_branch0
+    	dq exec_token_equals, exec_token_not
+    	branch0 .branch_state
+		dq exec_token_dup
+    	dq exec_token_lit, exec_token_branch
+   		dq exec_token_equals, exec_token_not
+    	branch0 .branch_state
+		dq exec_token_lit, exec_token_lit, exec_token_comma
+	.branch_state:
+    	dq exec_token_drop
+    	dq exec_token_comma
+    	dq exec_token_exit
+	.not_found: 
+    	dq exec_token_drop
+    	dq exec_token_prints
+    	dq exec_token_lit, not_found_msg, exec_token_prints
+	.exit:
+    	dq exec_token_exit
+	  

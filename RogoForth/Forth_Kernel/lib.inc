@@ -1,4 +1,3 @@
-section .text
 global string_length
 global print_string
 global print_char
@@ -12,6 +11,11 @@ global parse_uint
 global parse_int
 global string_copy
 global print_error
+
+section .data
+in_fd: dq 0
+
+section .text
 
 string_length:
              xor rax,rax
