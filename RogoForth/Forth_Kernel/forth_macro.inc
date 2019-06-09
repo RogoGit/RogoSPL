@@ -1,3 +1,5 @@
+; -------------- working with native words ------------
+
 %define last_word 0 ; last word
 
 %macro native 3
@@ -35,4 +37,22 @@
    add ret_stack, 8 ; removing top element of return stack
 %endmacro
 
+
+; ------------- working with colon words -------------
+
+%macro colon 3
+section .data 
+   word_ %+ %1 : dq last_word
+   %define last_word word_ %+ %1 
+   db 0  ; to mark the name start
+   str_ %+ %1:
+   db %2, 0
+   db %3
+    
+   exec_token_ %+ %1 : dq impl_docol
+%endmacro
+
+%macro colon 2
+colon %1, %2, 0 ; colon macro with no flags
+%endmacro
 

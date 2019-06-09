@@ -206,6 +206,16 @@ native branch_0, "0branch" ; jump to a location if TOS = 0. Location is calculat
   .skip:
     add pc, 8 ; adding to program counter - going to next instruction
     jmp next
+	
+colon bye, "bye" ; exiting forth
+   dq exec_token_lit, 60
+   dq exec_token_lit, 0
+   dq exec_token_lit, 0
+   dq exec_token_lit, 0
+   dq exec_token_lit, 0
+   dq exec_token_lit, 0
+   dq exec_token_lit, 0
+   dq exec_token_syscall	
 
 native docol, "docol" ; this is the implementation of any colon-word
   ret_push pc ; program counter -> to return stack
