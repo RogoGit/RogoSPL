@@ -270,6 +270,41 @@ native show_stack, ".S" ; show stack content
         pop rcx
         add rcx, 8
         jmp .loop
+		
+		
+; ----------------- printing string -------------------
+
+native emit, "emit" ; output character to stdout
+    pop rdi
+    call print_char
+    jmp next
+
+colon count, "count" ; null-terminated string length
+     dq exec_token_dup
+ 	.loop:
+    	dq exec_token_dup
+     	dq exec_token_fetch_byte
+     	branch0 .exit
+     	dq exec_token_lit, 1, exec_token_plus
+     	branch .loop
+ 	.exit:
+     	dq exec_token_swap, exec_token_minus, exec_token_exit
+
+colon printc, "printc" ; prints a certain amount of symbols from string
+    dq exec_token_to_ret
+	.loop:
+    	dq exec_token_fetch_ret
+    	branch0 .exit
+    	dq exec_token_dup, exec_token_fetch_byte, exec_token_emit
+    	dq exec_token_lit, 1, exec_token_plus
+    	dq exec_token_from_ret, exec_token_lit, 1, exec_token_minus, exec_token_to_ret
+    	branch .loop
+    .exit:
+    	dq exec_token_from_r, exec_token_drop, exec_token_drop, exec_token_exit
+
+colon prints, "prints" ; print a null-terminated string
+     dq exec_token_dup, exec_token_count, exec_token_printc, exec_token_exit
+
 
 ; ---------------- execution control -------------------
 
