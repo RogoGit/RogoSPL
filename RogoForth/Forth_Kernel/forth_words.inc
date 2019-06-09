@@ -2,232 +2,252 @@
 ; ----------- basic stack operations -------------
 
 native swap,"swap" ; (ab -- ba)
-  pop rax
-  pop rdx
-  push rax
-  push rdx
-  jmp next
+    pop rax
+    pop rdx
+    push rax
+    push rdx
+    jmp next
 
 native drop,"drop" ; (a --)
-  ; pop rax
-  ; may be we do not have to save value in register before deleting, so
-  add rsp, 8
-  jmp next
+    ; pop rax
+    ; may be we do not have to save value in register before deleting, so
+    add rsp, 8
+    jmp next
 
 native dup, "dup" ; (a -- aa)
-  push qword [rsp] ; pushing value from memory with address from top of the stack
-  jmp next
+    push qword [rsp] ; pushing value from memory with address from top of the stack
+    jmp next
 	
 
 ; ------------ ariphmetic operations ---------------
 
 native plus, "+" ;( x y -- [x+y])
-  pop r15 ; destroy top with saving to r15
-  add [rsp], r15 ; add r15 to new top - value in memory cell referenced by rsp
-  jmp next
+    pop r15 ; destroy top with saving to r15
+    add [rsp], r15 ; add r15 to new top - value in memory cell referenced by rsp
+    jmp next
 
 native minus, "-" ;( x y -- [x-y])
-  pop r15
-  sub [rsp], r15 ; same as plus but sub instead of add
-  jmp next
+    pop r15
+    sub [rsp], r15 ; same as plus but sub instead of add
+    jmp next
 
 native multiple, "*" ;( x y -- [x*y])
-  pop rax
-  pop r15
-  imul r15 ; signed multiple
-  push rax 
-  jmp next
+    pop rax
+    pop r15
+    imul r15 ; signed multiple
+    push rax 
+    jmp next
 
 native divide, "/" ;( x y -- [x/y])
-  pop r15
-  pop rax
-  xor edx,edx ; here will be remainder
-  idiv r15 ; signed division rax/r15 -> rax
-  push rax ; push result
-  jmp next
+    pop r15
+    pop rax
+    xor edx,edx ; here will be remainder
+    idiv r15 ; signed division rax/r15 -> rax
+    push rax ; push result
+    jmp next
 
 native mod, "%" ;( x y -- [x mod y])
-  pop r15
-  pop rax
-  xor edx,edx ; here will be remainder
-  idiv r15 ; signed division rax/r15 -> rax
-  push rdx ; push remainder
-  jmp next
+    pop r15
+    pop rax
+    xor edx,edx ; here will be remainder
+    idiv r15 ; signed division rax/r15 -> rax
+    push rdx ; push remainder
+    jmp next
 
 
 ; -------------- comparation operations ------------
 
 native less, "<" ;( x y -- [x<y])
-  pop r15 ; y
-  pop r14 ; x
-  cmp r15,r14
-  jle .less
-  push 1 ; condition is true
-  jmp next
-  .less:
-    push 0 ; condition is false
-    jmp next
-
-native more, ">" ;( x y -- [x>y])
-  pop r15 ; y
-  pop r14 ; x
-  cmp r14,r15
-  jg .more
-  push 0 ; condition is false
-  jmp next
-  .more:
+    pop r15 ; y
+    pop r14 ; x
+    cmp r15,r14
+    jle .less
     push 1 ; condition is true
     jmp next
+    .less:
+        push 0 ; condition is false
+        jmp next
 
-native equals, "=" ;( x y -- [x=y])
-  pop r15
-  pop r14
-  cmp r14,r15
-  jne .neq
-  push 1 ; condition is true
-  jmp next
-  .neq:
+native more, ">" ;( x y -- [x>y])
+    pop r15 ; y
+    pop r14 ; x
+    cmp r14,r15
+    jg .more
     push 0 ; condition is false
     jmp next
+    .more:
+        push 1 ; condition is true
+        jmp next
+
+native equals, "=" ;( x y -- [x=y])
+    pop r15
+    pop r14
+    cmp r14,r15
+    jne .neq
+    push 1 ; condition is true
+    jmp next
+    .neq:
+        push 0 ; condition is false
+        jmp next
 
 
 ; ------------- logical operations ----------------
 
 native not, "not" ;( a -- a' ) a' = 0 if a != 0 a' = 1 if a == 0
-  pop r15
-  test r15,r15
-  jz .zero
-  push 0 
-  jmp next
-  .zero:
-    push 1
+    pop r15
+    test r15,r15
+    jz .zero
+    push 0 
     jmp next
+    .zero:
+        push 1
+        jmp next
 
 native and, "and" ;( a b -- [a&b])
-  pop r15
-  and [rsp], r15 ; bitwise and r15 with new top - value in memory cell referenced by rsp
-  jmp next
+    pop r15
+    and [rsp], r15 ; bitwise and r15 with new top - value in memory cell referenced by rsp
+    jmp next
 
 native or, "or" ;( a b -- [a|b])
-  pop r15
-  or [rsp], r15 ; bitwise or r15 with new top - value in memory cell referenced by rsp
-  jmp next
+    pop r15
+    or [rsp], r15 ; bitwise or r15 with new top - value in memory cell referenced by rsp
+    jmp next
 
 native land, "land" ;( a b -- [a&&b])
-  pop r15
-  pop r14
-  test r15,r15
-  jz .no
-  push r14
-  jmp next
-  .no:
-    push r15
+    pop r15
+    pop r14
+    test r15,r15
+    jz .no
+    push r14
     jmp next
+    .no:
+        push r15
+        jmp next
 
 native lor, "lor" ;( a b -- [a||b])
-  pop r15
-  pop r14
-  test r15,r15
-  jnz .yes
-  push r14
-  jmp next
-  .yes:
-    push r15
+    pop r15
+    pop r14
+    test r15,r15
+    jnz .yes
+    push r14
     jmp next
+    .yes:
+        push r15
+        jmp next
 
 
 ; -------------- return stack operations ------------
 
 native to_ret, ">r" ; pop from data stack into return stack
-  pop r15
-  ret_push r15 ; macro from forth_macro.inc
-  jmp next
+    pop r15
+    ret_push r15 ; macro from forth_macro.inc
+    jmp next
 
 native from_ret, "r>" ; push from return stack into data stack
-  ret_pop r15 ; macro from forth_macro.inc
-  push r15
-  jmp next
+    ret_pop r15 ; macro from forth_macro.inc
+    push r15
+    jmp next
 
 native fetch_ret, "r@" ; non-destructive copy from the top of return stack to the top of data stack
-  push qword [ret_stack] ; ret_stack will be defined in another file
-  jmp next
+    push qword [ret_stack] ; ret_stack will be defined in another file
+    jmp next
 
 
 ; ------------- working with memory ------------------
 
 native fetch, "@" ;( addr -- value ) fetch value from memory
-  pop r15
-  push qword [r15] ; putting to stack head value by address from stack head
-  jmp next
+    pop r15
+    push qword [r15] ; putting to stack head value by address from stack head
+    jmp next
 
 
 native write, "!" ;( val addr -- ) store value by address
-  pop r15 ; addr
-  pop r14 ; val
-  mov [r15], r14 ; write value 'val' by address 'addr'
-  jmp next
+    pop r15 ; addr
+    pop r14 ; val
+    mov [r15], r14 ; write value 'val' by address 'addr'
+    jmp next
 
 native write_byte, "c!" ;( char addr -- ) store one byte by address
-  pop r15 ; addr
-  pop r14 ; char
-  mov [r15], r14b ; writing only lower byte
-  jmp next
+    pop r15 ; addr
+    pop r14 ; char
+    mov [r15], r14b ; writing only lower byte
+    jmp next
 
 native fetch_byte, "c@" ;( addr -- char ) read one byte starting at addr
-  pop r15
-  movzx r15, byte [r15] ; in r15 - lower byte, the rest bytes are zero
-  push r15
-  jmp next
+    pop r15
+    movzx r15, byte [r15] ; in r15 - lower byte, the rest bytes are zero
+    push r15
+    jmp next
 
 native word, "word" ; ( addr -- len ) read word and store it starting at address + word length pushed into stack
-  pop rdi
-  call read_word
-  push rdx
-  jmp next
+    pop rdi
+    call read_word
+    push rdx
+    jmp next
 
 native execute, "execute" ; ( xt -- ) execute word with this execution token on TOS
-  pop r15
-  mov w, r15 ; w - address of current instruction handler, will be defined in another file  
-  jmp [r15] ; going by address stored in poped value
-  
+    pop r15
+    mov w, r15 ; w - address of current instruction handler, will be defined in another file  
+    jmp [r15] ; going by address stored in poped value
+
+
+; ----------------- working with stack -----------------
+
+native dot, "." ; ( a -- ) drop element from stack and send it to stdout
+    pop rdi
+    call print_int
+    jmp next
+
+native show_stack, ".S" ; show stack content
+    mov rcx, rsp
+    .loop:
+        cmp rcx, [stack_base]
+        jae next
+        mov rdi, [rcx]
+        push rcx
+        call print_int
+        call print_newline
+        pop rcx
+        add rcx, 8
+        jmp .loop
 
 ; ---------------- execution control -------------------
 
 native exit, "exit" ; exit from colon word
-  ret_pop pc ; write return stack head to program counter - next instruction
-  jmp next
+    ret_pop pc ; write return stack head to program counter - next instruction
+    jmp next
 
 native branch, "branch" ; jump to a absolute location. Using it interactively is quasi-impossible; using it as a low-level primitive to implement if and similar constructs is much more convenient
-  ; compile-only word
-  mov pc, [pc]
-  jmp next
+    ; compile-only word
+    mov pc, [pc]
+    jmp next
 
 native branch0, "0branch" ; jump to a location if TOS = 0. Location is calculated in a similar way
-  ; compile-only word
-  pop r15
-  test r15, r15
-  jnz .skip ; not 0 - skipping
-  mov pc, [pc] ; ok - doing like in branch
-  jmp next
-  .skip:
-    add pc, 8 ; adding to program counter - going to next instruction
+    ; compile-only word
+    pop r15
+    test r15, r15
+    jnz .skip ; not 0 - skipping
+    mov pc, [pc] ; ok - doing like in branch
     jmp next
+    .skip:
+        add pc, 8 ; adding to program counter - going to next instruction
+        jmp next
 	
 colon bye, "bye" ; exiting forth
-   dq exec_token_lit, 60
-   dq exec_token_lit, 0
-   dq exec_token_lit, 0
-   dq exec_token_lit, 0
-   dq exec_token_lit, 0
-   dq exec_token_lit, 0
-   dq exec_token_lit, 0
-   dq exec_token_syscall	
+    dq exec_token_lit, 60
+    dq exec_token_lit, 0
+    dq exec_token_lit, 0
+    dq exec_token_lit, 0
+    dq exec_token_lit, 0
+    dq exec_token_lit, 0
+    dq exec_token_lit, 0
+    dq exec_token_syscall	
 
 native docol, "docol" ; this is the implementation of any colon-word
-  ret_push pc ; program counter -> to return stack
-  add w,8
-  mov pc, w
-  jmp next
+    ret_push pc ; program counter -> to return stack
+    add w,8
+    mov pc, w
+    jmp next
 
 ; -------------------- initialization -------------------
 
@@ -281,6 +301,9 @@ native init, "init"
     .first:
     mov [stack_base], rsp
     jmp next
+	
+; ------------------ interpretation --------------------
+
 
 ; ------------------ forth syscall --------------------- 
 
