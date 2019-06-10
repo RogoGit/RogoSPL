@@ -19,7 +19,7 @@ lw: dq last_word       ; stores a pointer to the last word in dictionary
                        ; should be placed after all words are defined
 dp: dq user_mem        ; current global data pointer
 here: dq user_dict
-stack_start:  dq 0     ; stores a saved address of data stack
+;stack_start:  dq 0     ; stores a saved address of data stack
 ;forth_init: dq token_selector 
 
 section .bss

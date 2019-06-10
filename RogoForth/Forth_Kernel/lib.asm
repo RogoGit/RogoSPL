@@ -266,9 +266,3 @@ copy_ret:
   pop rbx
   ret
 	
-
-
-
-
-
-

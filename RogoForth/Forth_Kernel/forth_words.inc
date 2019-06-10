@@ -220,6 +220,25 @@ native fetch, "@" ;( addr -- value ) fetch value from memory
     push qword [r15] ; putting to stack head value by address from stack head
     jmp next
 
+colon tick, "'", 1 ; place word address on stack
+	dq exec_token_inbuf
+	dq exec_token_word
+	dq exec_token_drop
+	dq exec_token_inbuf
+	dq exec_token_find, exec_token_dup
+    branch0 .not_found
+	dq exec_token_cfa
+    dq exec_token_state, exec_token_fetch
+    branch0 .interpret
+    dq exec_token_lit, exec_token_lit
+    dq exec_token_comma
+    dq exec_token_comma
+	.interpret:
+		dq exec_token_exit
+    .not_found:
+    	dq exec_token_inbuf, exec_token_prints
+    	dq exec_token_lit, not_found_msg, exec_token_prints
+    	dq exec_token_exit
 
 native write, "!" ;( val addr -- ) store value by address
     pop r15 ; addr
