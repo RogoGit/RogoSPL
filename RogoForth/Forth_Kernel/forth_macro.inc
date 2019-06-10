@@ -71,9 +71,10 @@ section .data
 %endmacro
 
 ; ------------- const -------------------------
+
 %macro const 2
 %defstr %%__cnst_str %1
-native %%__cnst_str, %1 
+native %1, %%__cnst_str
     push qword %2
     jmp next
 %endmacro

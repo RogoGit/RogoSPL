@@ -11,6 +11,7 @@ global parse_uint
 global parse_int
 global string_copy
 global print_error
+global in_fd
 
 section .data
 in_fd: dq 0

@@ -188,7 +188,7 @@ colon colon, ":" ; read and define word
     .again:
     dq exec_token_inbuf, exec_token_word
     branch0 .again
-    dq exec_token_lit, 0, exec_token_inbuf, exec_token_create
+    dq exec_token_lit, 0, exec_token_inbuf, exec_token_create_word
     dq exec_token_lit, 1, exec_token_state, exec_token_write
     dq exec_token_lit, impl_docol, exec_token_comma
     dq exec_token_exit
