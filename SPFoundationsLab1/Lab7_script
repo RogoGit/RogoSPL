@@ -1,0 +1,60 @@
+#!/bin/bash
+
+err_file="$HOME/lab7_err"
+
+while [ "$user_choice" != 6 ]
+do
+	echo '1) Напечатать имя текущего каталога'
+	echo '2) Сменить текущий каталог'
+	echo '3) Напечатать содержимое текущего каталога'
+	echo '4) Создать файл'
+	echo '5) Удалить файл'
+	echo '6) Выйти из программы'
+	printf "\n"
+	echo '   Выберите пункт меню:'
+
+	read user_choice
+	
+	case $user_choice in
+		1) pwd
+		   ;;
+		2) echo 'Введите путь до директории, к которой хотите перейти'
+		   read cd_new_dir
+	       cd $cd_new_dir 2>> $err_file
+	       if [ "$?" = 0 ]
+		   	   then printf "Директория успешно изменена\n"
+		   else  
+		       echo "Директории не существует или доступ невозможен" 1>&2
+		   fi
+	       ;;
+		3) ls
+		   ;;
+		4) echo 'Введите имя файла'
+		   read new_file_name
+	       touch $new_file_name 2>> $err_file
+		   if [ "$?" = 0 ] 
+		   	   then printf "Файл успешно создан\n"
+		   else  
+		       echo "Не удалось создать файл" 1>&2
+		   fi
+		   ;;
+		5) echo 'Введите имя файла'
+		   read delete_file_name
+		   echo 'Вы уверены? (y/n)'
+		   read delete_confirm
+		   case $delete_confirm in
+	 	   	   y|Y) rm $delete_file_name 2>> $err_file
+					if [ "$?" = 0 ] 
+						then printf "Файл успешно удален\n"
+					else 
+						echo "Удаление не удалось" 1>&2
+					fi
+					;;
+				 *) echo "Откат удаления. Возвращение в меню"  	
+		   esac 
+		   ;;
+		6) break
+		   ;;
+		*) echo 'Ввод некорректен'
+	esac
+done	
