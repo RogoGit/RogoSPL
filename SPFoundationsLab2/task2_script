@@ -1,0 +1,17 @@
+#!/bin/bash
+
+results=()
+
+for curr_file in $1/* 
+do
+    if [ -p "$curr_file" ]; then
+	  if [ ! -z $(lsof $curr_file | awk '$4~/[0-9]*w/' | tr " " "|") ] ; then
+        results+=("$(basename "$curr_file")")
+	  fi	
+    fi
+done 
+printf '%s\n' "${results[@]}"
+
+
+
+
