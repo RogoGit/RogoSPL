@@ -1,0 +1,3 @@
+#!/bin/bash
+
+awk -F':' '/[nologin|false]$/{print $1}' /etc/passwd | sort
