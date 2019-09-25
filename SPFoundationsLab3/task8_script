@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+	  echo "Please, write username"
+	  exit
+fi	    
+
+if getent passwd $1 > /dev/null 2>&1; then
+	user=`getent passwd "$1"`
+	echo "OK"
+else 
+    echo 'No such user'
+	exit
+fi
