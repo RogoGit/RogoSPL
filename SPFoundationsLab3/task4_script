@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+	echo "Please, write directory name"
+	exit
+fi
+
+if [ ! -d "$1" ]; then
+	echo "No such directory found"
+	exit
+else
+	# ls -n: like -l, but list numeric user and group IDs
+	owner=`ls -n . | grep "$1" | awk '{ print $3 }'`
+	group=`ls -n . | grep "$1" | awk '{ print $4 }'`
+	
+	owner_name=`getent passwd "$owner" | awk -F':' '{ print $1 }'`
+	if [ ! -z `ls -n . | grep $1$ | grep '^d.w' | tr " " "|"` ]; then
+		echo "$owner_name"
+	fi	
+	
+fi	
