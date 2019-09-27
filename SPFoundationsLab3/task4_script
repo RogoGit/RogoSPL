@@ -1,5 +1,7 @@
 #!/bin/bash
 
+results=()
+
 if [ -z "$1" ]; then
 	echo "Please, write directory name"
 	exit
@@ -9,13 +11,38 @@ if [ ! -d "$1" ]; then
 	echo "No such directory found"
 	exit
 else
+	# check owner
 	# ls -n: like -l, but list numeric user and group IDs
 	owner=`ls -n . | grep "$1" | awk '{ print $3 }'`
-	group=`ls -n . | grep "$1" | awk '{ print $4 }'`
-	
 	owner_name=`getent passwd "$owner" | awk -F':' '{ print $1 }'`
-	if [ ! -z `ls -n . | grep $1$ | grep '^d.w' | tr " " "|"` ]; then
-		echo "$owner_name"
+	if [ ! -z `ls -n . | grep " $1$" | grep '^d.w' | tr " " "|"` ]; then
+		results+=("$owner_name")
 	fi	
-	
-fi	
+	# check group
+	group=`ls -n . | grep "$1" | awk '{ print $4 }'`
+	members=`getent group "$group" | awk -F':' '{ print $4 }' | grep -v '^$'`
+	if [ ! -z `ls -n . | grep " $1$" | grep '^d....w' | tr " " "|"` ]; then
+		results+=("$(echo $members | tr "," "\n")")
+	fi	
+	# check others
+	if [ ! -z `ls -n . | grep " $1$" | grep '^d.......w' | tr " " "|"` ]; then
+		for user in `getent passwd`; do
+		user_name=`echo "$user" | awk -F':' ' { print $1 }'`
+		if [ "$user_name" = "$owner_name" ]; then
+			continue
+		fi
+			for mem in `getent group "$group" | grep -v '^$' | nawk -F':' '{print $4}' | tr ',' '\n'`; do
+				if [ "$user_name" = "$mem" ]; then
+					continue 2
+				fi
+			done	
+		results+=("$user_name")
+		done
+	fi	
+fi
+
+if [ -z "$results" ]; then
+	echo "No such users found..."
+else
+    printf '%s\n' "${results[@]}" | sort -u
+fi
