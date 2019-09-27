@@ -1,13 +1,24 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-	  echo "Please, write username"
-	  exit
+	echo "Please, write username"
+	exit
 fi	    
 
 if getent passwd $1 > /dev/null 2>&1; then
-	user=`getent passwd "$1"`
-	echo "OK"
+	user=`getent passwd "$1" | awk -F':' '{ print $3 }'`
+	for curr_file in * 
+	    do
+	   	    if [ ! -d "$curr_file" ]; then
+				# ls -n: like -l, but list numeric user and group IDs
+				curr_file_uid=`ls -n "$curr_file" | awk '{ print $3 }'` 
+				curr_file_guid=`ls -n "$curr_file" | awk '{ print $4 }'`
+				if [ "$user" = "$curr_file_uid" ]; then
+					ls -l "$curr_file" | grep '^.r' > /dev/null && echo "$curr_file"
+					continue
+				fi
+			fi
+	    done
 else 
     echo 'No such user'
 	exit
