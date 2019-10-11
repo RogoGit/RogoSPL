@@ -18,11 +18,11 @@ sub handle_file($) {
 	while (my $row = <$file>) {
   		chomp $row;
   		$data_array[0]+=1;
-		$data_array[1]+=scalar(split(/\s+/,$row));
+		$data_array[1]+=scalar(split(" ",$row));
 		$data_array[3]+=length($row);
 	}
 	
-	
+	$file_info{$filename} = \@data_array;
 	
 	close($file);
 }
@@ -33,4 +33,8 @@ if (scalar(@ARGV) == 0) { die "No arguments supplied!\n" }
 
 foreach my $curr_file (@ARGV) {
 	handle_file($curr_file);
+}
+
+foreach my $key (keys %file_info) {
+	print("@{$file_info{$key}}[0]   @{$file_info{$key}}[1]   @{$file_info{$key}}[2]   $key\n");
 }
