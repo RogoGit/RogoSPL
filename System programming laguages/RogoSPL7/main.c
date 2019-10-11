@@ -76,9 +76,9 @@ int main() {
         }
     }
 
-    getrusage(RUSAGE_SELF, &r );
-    start = r.ru_utime;
-//     for( uint64_t i = 0; i < 20; i++ )
+    //getrusage(RUSAGE_SELF, &r );
+/*    start = r.ru_utime;
+     for( uint64_t i = 0; i < 20; i++ )
      sepia_sse_inplace(inp_image);
     getrusage(RUSAGE_SELF, &r );
     end = r.ru_utime;
@@ -108,7 +108,7 @@ int main() {
             puts("Непредвиденная ошибка записи");
             break;
         }
-    }
+    }*/
 
     return 0;
 }

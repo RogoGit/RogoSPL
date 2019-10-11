@@ -15,8 +15,8 @@ fi
 for curr_file in $1/* 
 do
     if [ -p "$curr_file" ]; then
-	  if [ ! -z $(lsof $curr_file | awk '$4~/[0-9]*w/' | tr " " "|") ] ; then
-        results+=("$(basename "$curr_file")")
+	  if [ ! -z $(lsof $curr_file | awk '$4~/[[:digit:]]*w/' | tr " " "|") ] ; then
+        results+=("$(basename "$curr_file") PID - $(lsof $curr_file | grep "$curr_file" | grep " [0-9]w  " | awk '{print $2}')")
 	  fi	
     fi
 done 
