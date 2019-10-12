@@ -39,6 +39,8 @@ my $chrs_flag = 0; # -m
 my $lines_flag = 0; # -l
 my $words_flag = 0; # -w
 
+my @parameters_sum = (0,0,0,0);  
+
 if (scalar(@ARGV) == 0) { die "No arguments supplied!\n" }
 
 foreach my $arg (@ARGV) {
@@ -51,7 +53,7 @@ foreach my $arg (@ARGV) {
 			elsif  ($c eq'm') { $chrs_flag = 1; }
 			elsif  ($c eq 'w') { $words_flag = 1; }
 			elsif  ($c eq '-') { }
-			else   { die "$c - illegal option"; }
+			else   { die "$c - illegal option\n"; }
 		}		
 	} else {
 		# actually it is ordinary file
@@ -60,5 +62,41 @@ foreach my $arg (@ARGV) {
 }
 
 foreach my $key (keys %file_info) {
-	print("  @{$file_info{$key}}[0]   @{$file_info{$key}}[1]   @{$file_info{$key}}[2]   $key\n");
+	
+	$parameters_sum[0]+=@{$file_info{$key}}[0];
+	$parameters_sum[1]+=@{$file_info{$key}}[1];
+	$parameters_sum[2]+=@{$file_info{$key}}[2];
+	$parameters_sum[3]+=@{$file_info{$key}}[3];
+
+	# default behaviour
+	if (!$lines_flag && !$words_flag && !$bytes_flag && !$chrs_flag) {
+		print("  @{$file_info{$key}}[0]   @{$file_info{$key}}[1]   @{$file_info{$key}}[2]   $key\n");
+	} else {
+	
+	# constructing output
+	my $output_str = "";
+	my $sum_string = "";
+	if ($lines_flag) {
+		$output_str.="  @{$file_info{$key}}[0]";
+		$sum_string = "";
+	}
+	if ($words_flag) {
+		$output_str.="  @{$file_info{$key}}[1]";
+	}
+	if ($bytes_flag) {
+		$output_str.="  @{$file_info{$key}}[2]";
+	}
+	if ($chrs_flag) {
+		$output_str.="  @{$file_info{$key}}[3]";
+	}
+		$output_str.="	$key\n";
+		print($output_str);
+	}
 }
+
+# printing sum of bytes/words/lines/characters when several files
+if (scalar(@ARGV)>1) {
+	print("  $parameters_sum[0]");
+}
+
+
