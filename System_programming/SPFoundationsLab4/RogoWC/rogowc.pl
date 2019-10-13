@@ -20,7 +20,8 @@ sub handle_file($) {
 	while (my $row = <$file>) {
   		chomp $row;
   		$data_array[0]+=1;
-		$data_array[1]+=scalar(split(" ",$row));
+		my @row_split = split(" ",$row);
+		$data_array[1]+=scalar(@row_split);
 		$data_array[3]+=length($row);
 	}
 	
@@ -75,10 +76,9 @@ foreach my $key (keys %file_info) {
 	
 	# constructing output
 	my $output_str = "";
-	my $sum_string = "";
+	
 	if ($lines_flag) {
 		$output_str.="  @{$file_info{$key}}[0]";
-		$sum_string = "";
 	}
 	if ($words_flag) {
 		$output_str.="  @{$file_info{$key}}[1]";
@@ -95,8 +95,30 @@ foreach my $key (keys %file_info) {
 }
 
 # printing sum of bytes/words/lines/characters when several files
-if (scalar(@ARGV)>1) {
-	print("  $parameters_sum[0]");
+if ($files_number > 1) {
+	
+	# default behaviour
+	if (!$lines_flag && !$words_flag && !$bytes_flag && !$chrs_flag) {
+		print("  $parameters_sum[0]   $parameters_sum[1]   $parameters_sum[2]   итого\n");
+	} else {
+	
+	my $sum_string = "";
+	
+	if ($lines_flag) {
+		$sum_string.="  $parameters_sum[0]";
+	}
+	if ($words_flag) {
+		$sum_string.="  $parameters_sum[1]";
+	}
+	if ($bytes_flag) {
+		$sum_string.="  $parameters_sum[2]";
+	}
+	if ($chrs_flag) {
+		$sum_string.="  $parameters_sum[3]";
+	}
+		$sum_string.="	итого\n";
+		print($sum_string);
+	}
 }
 
 
