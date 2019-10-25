@@ -22,10 +22,17 @@ int lines_count(const char *str){
 int words_count(const char *str) {
     int words = 0;
     int i = 0;
-    for (; str[i] != '\0'; i++) {
+    while (str[i] != '\0') {
+        if (str[i] == ' ' || str[i] == '\n' || str[i]== '\r' || str[i] == '\t') {
+            i++;
+        } else {
+            break;
+        }
+    }
+    for(; str[i] != '\0'; i++) {
         if (str[i] == ' ' || str[i] == '\n' || str[i]== '\r' || str[i] == '\t' ) {
-            words += 1;
-            while (str[i]== ' ' || str[i] == '\n' || str[i]== '\r' || str[i] == '\t') {
+            words+=1;
+            while (str[i]==' ' || str[i] == '\n' || str[i]== '\r' || str[i] == '\t') {
                 i++;
             }
         }
@@ -44,7 +51,6 @@ int* handle_file(const char *filename) {
     int* file_data = calloc(4, sizeof(int));
     ssize_t read_bytes;
     char buffer[BUFFER_SIZE+1];
-    errno = 0;
 
     int fd = open(filename,O_RDONLY);
 
@@ -60,6 +66,31 @@ int* handle_file(const char *filename) {
     return file_data;
 }
 
+int check_file(const char *filename, int show) {
+
+    errno = 0;
+    int fd = open(filename,O_RDONLY);
+
+    if (errno == EACCES) {
+        if (show) fprintf(stderr, "%s - permission denied\n", filename);
+        return 0;
+    } else if (errno == ENOENT) {
+        if (show) fprintf(stderr, "%s - no such file found\n", filename);
+        return 0;
+    } else if (errno) {
+        if (show) fprintf(stderr, "%s - file opening error\n", filename);
+        return 0;
+    }
+
+    char buffer[1];
+    if (read(fd, buffer, 1) < 0) {
+        if (show) fprintf(stderr, "%s - cannot read file\n", filename);
+        return 0;
+    }
+
+    return 1;
+}
+
 int starts_with(const char *one, const char *another) {
     if (strncmp(one,another,strlen(another)) == 0) return 1;
     return 0;
@@ -68,8 +99,8 @@ int starts_with(const char *one, const char *another) {
 int main(int argc, char *argv[]) {
 
     if (argc < 2) {
-        printf("You need to choose at least one file!\n");
-        exit(0);
+        fprintf(stderr,"You need to choose at least one file!\n");
+        exit(EXIT_FAILURE);
     }
 
     int lines_flag = 0; int words_flag = 0;
@@ -79,7 +110,7 @@ int main(int argc, char *argv[]) {
     int files_iter = -1;
 
     for (int i=1; i<(argc); i++) {
-        if (!starts_with(argv[i], "-")) {
+        if (!starts_with(argv[i], "-") && check_file(argv[i],1)) {
             files_count++;
         }
     }
@@ -104,14 +135,16 @@ int main(int argc, char *argv[]) {
                         chars_flag++;
                         break;
                     default:
-                        printf("%c - illegal option!\n", argv[i][ch]);
-                        exit(0);
+                        fprintf(stderr,"%c - illegal option!\n", argv[i][ch]);
+                        exit(EXIT_FAILURE);
                 }
             }
         } else {
-            files_iter++;
-            files_info[files_iter] = handle_file(argv[i]);
-            file_names[files_iter] = argv[i];
+            if (check_file(argv[i],0)) {
+                files_iter++;
+                files_info[files_iter] = handle_file(argv[i]);
+                file_names[files_iter] = argv[i];
+            }
         }
     }
 
@@ -143,7 +176,7 @@ int main(int argc, char *argv[]) {
     if (files_count > 1) {
         // default
         if (!lines_flag && !words_flag && !bytes_flag && !chars_flag) {
-            printf("\t%d\t%d\t%d\tитого\n", lines_sum, words_sum, bytes_sum);
+            printf("\t%d\t%d\t%d", lines_sum, words_sum, bytes_sum);
         }
 
         if (lines_flag) printf("\t%d", lines_sum);
