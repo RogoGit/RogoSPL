@@ -3,26 +3,47 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <zconf.h>
+#include <sys/stat.h>
 
 #define BUFFER_SIZE 4096
 
 int lines_count(const char *str){
     int lines = 0;
     int i;
-    for( i=0; str[i] != '\0'; i++) {
-        if( str[i] == '\n' ) {
+    for (i=0; str[i] != '\0'; i++) {
+        if (str[i] == '\n' ) {
             lines+=1;
         }
     }
     return lines;
 }
 
-void handle_file(char *filename) {
+int words_count(const char *str) {
+    int words = 0;
+    int i = 0;
+    for (; str[i] != '\0'; i++) {
+        if (str[i] == ' ' || str[i] == '\n' || str[i]== '\r' || str[i] == '\t' ) {
+            words += 1;
+            while (str[i]== ' ' || str[i] == '\n' || str[i]== '\r' || str[i] == '\t') {
+                i++;
+            }
+        }
+    }
+    return words;
+}
+
+long int bytes_count(const char *filename) {
+    struct stat st;
+    stat(filename,&st);
+    return st.st_size;
+}
+
+void handle_file(const char *filename) {
 
     int lines;
-    //int bytes;
-    //int chars;
-    //int words;
+    long int bytes;
+    int chars;
+    int words;
 
     ssize_t read_bytes;
     char buffer[BUFFER_SIZE+1];
@@ -35,8 +56,11 @@ void handle_file(char *filename) {
     }
 
     lines = lines_count(buffer);
+    words = words_count(buffer);
+    bytes = bytes_count(filename);
+    chars = (int)strlen(buffer);
 
-    printf("%d\n",lines);
+    printf("%d\t%d\t%ld\t%d\n",lines,words,bytes,chars);
     //printf("%s",buffer);
 }
 
