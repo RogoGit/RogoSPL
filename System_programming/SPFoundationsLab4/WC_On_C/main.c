@@ -4,8 +4,9 @@
 #include <fcntl.h>
 #include <zconf.h>
 #include <sys/stat.h>
+#include <stdlib.h>
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1000000
 
 int lines_count(const char *str){
     int lines = 0;
@@ -38,13 +39,9 @@ long int bytes_count(const char *filename) {
     return st.st_size;
 }
 
-void handle_file(const char *filename) {
+int* handle_file(const char *filename) {
 
-    int lines;
-    long int bytes;
-    int chars;
-    int words;
-
+    int* file_data = calloc(4, sizeof(int));
     ssize_t read_bytes;
     char buffer[BUFFER_SIZE+1];
     errno = 0;
@@ -55,22 +52,108 @@ void handle_file(const char *filename) {
         buffer[read_bytes] = 0; // null terminator
     }
 
-    lines = lines_count(buffer);
-    words = words_count(buffer);
-    bytes = bytes_count(filename);
-    chars = (int)strlen(buffer);
+    file_data[0] = lines_count(buffer); //lines
+    file_data[1] = words_count(buffer); //words
+    file_data[2] = (int)bytes_count(filename); //bytes
+    file_data[3] = (int)strlen(buffer); //chars
 
-    printf("%d\t%d\t%ld\t%d\n",lines,words,bytes,chars);
-    //printf("%s",buffer);
+    return file_data;
+}
+
+int starts_with(const char *one, const char *another) {
+    if (strncmp(one,another,strlen(another)) == 0) return 1;
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
 
     if (argc < 2) {
         printf("You need to choose at least one file!\n");
+        exit(0);
     }
 
-    handle_file(argv[1]);
+    int lines_flag = 0; int words_flag = 0;
+    int bytes_flag = 0; int chars_flag = 0;
+
+    int files_count = 0;
+    int files_iter = -1;
+
+    for (int i=1; i<(argc); i++) {
+        if (!starts_with(argv[i], "-")) {
+            files_count++;
+        }
+    }
+
+    int* files_info[files_count]; //array with given files info
+    char* file_names[files_count];
+
+    for (int i=1; i<(argc); i++) {
+        if (starts_with(argv[i],"-")) {
+            for (unsigned int ch = 1; ch < strlen(argv[i]); ch++) {
+                switch (argv[i][ch]) {
+                    case 'l':
+                        lines_flag++;
+                        break;
+                    case 'w':
+                        words_flag++;
+                        break;
+                    case 'c':
+                        bytes_flag++;
+                        break;
+                    case 'm':
+                        chars_flag++;
+                        break;
+                    default:
+                        printf("%c - illegal option!\n", argv[i][ch]);
+                        exit(0);
+                }
+            }
+        } else {
+            files_iter++;
+            files_info[files_iter] = handle_file(argv[i]);
+            file_names[files_iter] = argv[i];
+        }
+    }
+
+    // constructing output
+
+    int lines_sum = 0; int words_sum = 0;
+    int bytes_sum = 0; int chars_sum = 0;
+
+    for (int i=0; i < files_count; i++) {
+        // summing
+        lines_sum += files_info[i][0]; words_sum += files_info[i][1];
+        bytes_sum += files_info[i][2]; chars_sum += files_info[i][3];
+
+        // default
+        if (!lines_flag && !words_flag && !bytes_flag && !chars_flag) {
+            printf("\t%d\t%d\t%d", files_info[i][0], files_info[i][1], files_info[i][2]);
+        }
+
+        if (lines_flag) printf("\t%d", files_info[i][0]);
+        if (words_flag) printf("\t%d", files_info[i][1]);
+        if (bytes_flag) printf("\t%d", files_info[i][2]);
+        if (chars_flag) printf("\t%d", files_info[i][3]);
+
+        printf("\t%s", file_names[i]);
+        printf("\n");
+    }
+
+    // show sum
+    if (files_count > 1) {
+        // default
+        if (!lines_flag && !words_flag && !bytes_flag && !chars_flag) {
+            printf("\t%d\t%d\t%d\tитого\n", lines_sum, words_sum, bytes_sum);
+        }
+
+        if (lines_flag) printf("\t%d", lines_sum);
+        if (words_flag) printf("\t%d", words_sum);
+        if (bytes_flag) printf("\t%d", bytes_sum);
+        if (chars_flag) printf("\t%d", chars_sum);
+        printf("\tитого");
+        printf("\n");
+    }
+
 
     return 0;
 }
