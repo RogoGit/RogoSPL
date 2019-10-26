@@ -66,6 +66,27 @@ int* handle_file(const char *filename) {
     return file_data;
 }
 
+int* handle_stdin() {
+
+    int* file_data = calloc(4, sizeof(int));
+
+    char inp[BUFFER_SIZE+1];
+    char buffer[BUFFER_SIZE+1];
+
+    while(scanf("%s", inp) != EOF) {
+        strcat(buffer,inp);
+        strcat(buffer, "\n");
+    };
+
+    file_data[0] = lines_count(buffer); //lines
+    file_data[1] = words_count(buffer); //words
+    file_data[2] = (int) strlen(buffer); //bytes
+    file_data[3] = (int) strlen(buffer); //chars
+
+    return file_data;
+
+}
+
 int check_file(const char *filename, int show) {
 
     errno = 0;
@@ -98,52 +119,66 @@ int starts_with(const char *one, const char *another) {
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 2) {
-        fprintf(stderr,"You need to choose at least one file!\n");
-        exit(EXIT_FAILURE);
-    }
-
     int lines_flag = 0; int words_flag = 0;
     int bytes_flag = 0; int chars_flag = 0;
 
     int files_count = 0;
     int files_iter = -1;
 
-    for (int i=1; i<(argc); i++) {
-        if (!starts_with(argv[i], "-") && check_file(argv[i],1)) {
-            files_count++;
+    if (argc < 2) {
+        files_count = 1;
+    } else {
+
+        for (int i = 1; i < (argc); i++) {
+            if ((!starts_with(argv[i], "-") && check_file(argv[i], 1)) ||
+                (starts_with(argv[i], "-") && strlen(argv[i]) == 1)) {
+                files_count++;
+            }
         }
     }
 
     int* files_info[files_count]; //array with given files info
     char* file_names[files_count];
 
-    for (int i=1; i<(argc); i++) {
-        if (starts_with(argv[i],"-")) {
-            for (unsigned int ch = 1; ch < strlen(argv[i]); ch++) {
-                switch (argv[i][ch]) {
-                    case 'l':
-                        lines_flag++;
-                        break;
-                    case 'w':
-                        words_flag++;
-                        break;
-                    case 'c':
-                        bytes_flag++;
-                        break;
-                    case 'm':
-                        chars_flag++;
-                        break;
-                    default:
-                        fprintf(stderr,"%c - illegal option!\n", argv[i][ch]);
-                        exit(EXIT_FAILURE);
+    if (argc < 2) {
+        files_info[0] = handle_stdin();
+        file_names[0] = "-";
+        
+    } else {
+
+        for (int i = 1; i < (argc); i++) {
+            if (starts_with(argv[i], "-") && (strlen(argv[i]) > 1)) {
+                for (unsigned int ch = 1; ch < strlen(argv[i]); ch++) {
+                    switch (argv[i][ch]) {
+                        case 'l':
+                            lines_flag++;
+                            break;
+                        case 'w':
+                            words_flag++;
+                            break;
+                        case 'c':
+                            bytes_flag++;
+                            break;
+                        case 'm':
+                            chars_flag++;
+                            break;
+                        default:
+                            fprintf(stderr, "%c - illegal option!\n", argv[i][ch]);
+                            exit(EXIT_FAILURE);
+                    }
                 }
-            }
-        } else {
-            if (check_file(argv[i],0)) {
-                files_iter++;
-                files_info[files_iter] = handle_file(argv[i]);
-                file_names[files_iter] = argv[i];
+            } else {
+                if (starts_with(argv[i], "-")) {
+                    files_iter++;
+                    files_info[files_iter] = handle_stdin();
+                    file_names[files_iter] = "-";
+                } else {
+                    if (check_file(argv[i], 0)) {
+                        files_iter++;
+                        files_info[files_iter] = handle_file(argv[i]);
+                        file_names[files_iter] = argv[i];
+                    }
+                }
             }
         }
     }
