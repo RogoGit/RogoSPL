@@ -26,15 +26,16 @@ void update_info (info_t* server_info) {
     server_info->run_time = time_now - server_info->start_time;
 }
 
-void detach_shm() {
+void server_shutdown() {
 	puts("\nServer shutdown...");
+	shmdt(server_info);
 	shmctl(memory,IPC_RMID,NULL);
 	exit(1);
 }
 
 int main() {
 
-	signal(SIGINT,detach_shm);
+	signal(SIGINT,server_shutdown);
 	
 	key_t key = ftok("shared_memory_key", PROJ);
 		 

@@ -16,7 +16,7 @@ int main (int argc, char *argv[]) {
     errno = 0;
     int memory = shmget(key, sizeof(info_t), SHM_RDONLY);
     if (memory < 0) {
-        fprintf(stderr,"Cannot connect to server\n");
+        fprintf(stderr,"Cannot get server data\n");
         return 1;
     }
     if ((server_info = shmat(memory, NULL,0)) == NULL) {
