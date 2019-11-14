@@ -5,9 +5,11 @@
 #include <errno.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <signal.h>
 #include "server_info_struct.h"
 
 info_t* server_info;
+int memory;
 
 void server_init (info_t* server_info) {
     server_info->pid = getpid();
@@ -24,12 +26,23 @@ void update_info (info_t* server_info) {
     server_info->run_time = time_now - server_info->start_time;
 }
 
+void detach_shm() {
+	puts("\nServer shutdown...");
+	shmctl(memory,IPC_RMID,NULL);
+	exit(1);
+}
+
 int main() {
 
+	signal(SIGINT,detach_shm);
+	
 	key_t key = ftok("shared_memory_key", PROJ);
 		 
     errno = 0;
-    int memory = shmget(key, sizeof(info_t), IPC_CREAT | PERMISSION);
+    memory = shmget(key, sizeof(info_t), IPC_CREAT | PERMISSION);
+	
+	printf("Server is running...\n");
+	
     if (memory < 0) {
         fprintf(stderr,"Error in shmget \n");
         return 1;
@@ -45,6 +58,6 @@ int main() {
         update_info(server_info);
         sleep(1);
     }
-
+	
     return 0;
 }
