@@ -10,6 +10,8 @@
 
 #define PERMISSION 0644
 #define PROJ 13
+#define MSG_CLIENT 1
+#define MSG_SERVER 2
 
 typedef struct info {
     pid_t pid;
@@ -19,5 +21,10 @@ typedef struct info {
     time_t run_time;
     double load_avg[3];
 } info_t;
+
+typedef struct mbuff {
+	long mtype;
+	char mtext[sizeof(info_t)];
+} msg_t;
 
 #endif

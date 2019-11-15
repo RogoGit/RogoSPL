@@ -9,7 +9,7 @@
 
 info_t* server_info;
 
-int main (int argc, char *argv[]) {
+int main () {
 	
     key_t key = ftok("shared_memory_key", PROJ);
 		 
@@ -23,6 +23,8 @@ int main (int argc, char *argv[]) {
         fprintf(stderr,"Error in shmat \n");
         return 1;
     }
+	
+	printf("\nUsing shared memory. \n")l
 
     printf("\nPID: %i,\nGID: %i,\nUID: %i\n", server_info->pid, server_info->gid, server_info->uid);
     printf("Server works: %li seconds\n", server_info->run_time);

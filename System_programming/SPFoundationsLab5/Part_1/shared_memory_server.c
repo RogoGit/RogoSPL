@@ -42,8 +42,6 @@ int main() {
     errno = 0;
     memory = shmget(key, sizeof(info_t), IPC_CREAT | PERMISSION);
 	
-	printf("Server is running...\n");
-	
     if (memory < 0) {
         fprintf(stderr,"Error in shmget \n");
         return 1;
@@ -53,6 +51,8 @@ int main() {
         return 1;
     }
 
+	printf("Using shared memory. Server is running...\n");
+	
     server_init(server_info);
 
     while(1) {
