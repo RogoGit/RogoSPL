@@ -12,6 +12,7 @@
 #define PROJ 13
 #define MSG_CLIENT 1
 #define MSG_SERVER 2
+#define MMAP_FILE "mmap_file"
 
 typedef struct info {
     pid_t pid;
