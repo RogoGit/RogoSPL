@@ -2,6 +2,8 @@
 use strict;
 use warnings qw(FATAL all);
 $ENV{'PATH'} = '/usr/bin';
+$ENV{CDPATH}="";
+$ENV{ENV}="";
 
 if (scalar(@ARGV) != 1) { die "Choose one file!\n"; }
 my $filename = shift(@ARGV);

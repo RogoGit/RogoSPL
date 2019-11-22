@@ -2,7 +2,9 @@
 
 use strict;
 use warnings qw(FATAL all);
-use English;
+$ENV{'PATH'} = '/usr/bin';
+$ENV{CDPATH}="";
+$ENV{ENV}="";
 
 # variables
 my $pid = $$;
@@ -15,14 +17,11 @@ my $run_time;
 
 my @sys_load;
 
-my $signal;
-
 # functions
 sub update_info {
 	$run_time = time() - $start_time;
-	$ENV{'PATH'} = '/usr/bin';
 	@sys_load = split(/load average: /, qx(uptime));
-    @sys_load = split(', ', $sys_load[1]);
+    	@sys_load = split(', ', $sys_load[1]);
 }
 
 # main

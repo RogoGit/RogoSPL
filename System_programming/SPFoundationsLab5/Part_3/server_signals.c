@@ -5,15 +5,7 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
-
-typedef struct info {
-    pid_t pid;
-    uid_t uid;
-    gid_t gid;
-    time_t start_time;
-    time_t run_time;
-    double load_avg[3];
-} info_t;
+#include "server_info_struct.h"
 
 info_t* server_info;
 

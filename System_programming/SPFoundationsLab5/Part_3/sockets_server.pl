@@ -3,6 +3,8 @@ use strict;
 use warnings qw(FATAL all);
 use IO::Socket::UNIX;
 $ENV{'PATH'} = '/usr/bin';
+$ENV{CDPATH}="";
+$ENV{ENV}="";
 
 # variables
 my $pid = $$;
