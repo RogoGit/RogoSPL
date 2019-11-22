@@ -24,7 +24,7 @@ int main () {
         return 1;
     }
 	
-	printf("\nUsing shared memory. \n")l
+	printf("\nUsing shared memory. \n");
 
     printf("\nPID: %i,\nGID: %i,\nUID: %i\n", server_info->pid, server_info->gid, server_info->uid);
     printf("Server works: %li seconds\n", server_info->run_time);
