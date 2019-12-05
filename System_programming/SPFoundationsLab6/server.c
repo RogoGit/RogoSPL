@@ -13,6 +13,8 @@
 typedef struct {
     pthread_t worker;
     int is_used;
+    int* fd;
+    pthread_cond_t* cond;
     } server_thread;
 
 typedef struct  {
@@ -22,15 +24,44 @@ typedef struct  {
     } dynamic_pool;
 
 dynamic_pool* thread_pool;
+//pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+size_t free_thread (dynamic_pool* pool, const pthread_t* thread) {
+    size_t i;
+    for (i = 0; i < pool->size; i++) {
+        if (&(pool->data[i].worker) == thread) {
+            pool->data[i].fd = NULL;
+            pool->data[i].is_used = 0;
+            break;
+        }
+    }
+    return i;
+}
+
+void* test(void* thr_info) {
+    pthread_mutex_lock(&thread_pool->mutex);
+    server_thread* info = (server_thread *) thr_info;
+    while (!(info->is_used)) {
+        pthread_cond_wait(info->cond,&thread_pool->mutex);
+    }
+    dprintf(*info->fd, "testtest");
+    close(*info->fd);
+    free_thread(thread_pool,&(info->worker));
+    pthread_mutex_unlock(&thread_pool->mutex);
+    return NULL;
+}
 
 size_t create_dynamic_thread_pool (dynamic_pool* pool) {
     pool->size = DEFAULT_SIZE;
     pool->data = (server_thread*) malloc (pool->size * sizeof(server_thread));
+    pthread_mutex_init(&pool->mutex,NULL);
     unsigned int i;
     for (i = 0; i < pool->size; i++) {
+        pool->data[i].fd = NULL;
         pool->data[i].is_used = 0;
+        pool->data[i].cond = &(pthread_cond_t) PTHREAD_COND_INITIALIZER;
+        pthread_create((void*) &(pool->data[i].worker), NULL, test, (void*) &pool->data[i]);
     }
-    pthread_mutex_init(&pool->mutex,NULL);
     return pool->size;
 }
 
@@ -40,45 +71,25 @@ size_t increment_pool (dynamic_pool* pool) {
     pool->data = (server_thread*) realloc ((void*)pool->data, pool->size * sizeof(server_thread));
     size_t i;
     for (i = old_size; i < pool->size; i++) {
+        //pool->data[i].fd = (int) malloc(sizeof(int));
+       // pool->data[i].fd = (int) NULL;
         pool->data[i].is_used = 0;
+        pthread_create((void*) &(pool->data[i].worker), NULL, test, (void*) &(pool->data[i].fd));
     }
     return pool->size;
 }
 
-size_t decrement_pool (dynamic_pool* pool) {
-    pool->size -= SIZE_CHANGE;
-    pool->data = (server_thread*) realloc ((void*)pool->data, pool->size * sizeof(server_thread));
-    return pool->size;
-}
-
-pthread_t get_free_thread (dynamic_pool* pool) {
-    pthread_mutex_lock(&pool->mutex);
+server_thread* get_free_thread (dynamic_pool* pool) {
     unsigned int i;
     for (i = 0; i < pool->size; i++) {
         if (!pool->data[i].is_used) {
             pool->data[i].is_used = 1;
-            return pool->data[i].worker;
+            return (void*) &(pool->data[i]);
         }
     }
-
-    increment_pool(pool);
+    //increment_pool(pool);
     pool->data[i].is_used = 1;
-    pthread_mutex_unlock(&pool->mutex);
-    return pool->data[i].worker;
-}
-
-size_t free_thread (dynamic_pool* pool, const pthread_t* thread) {
-    pthread_mutex_lock(&pool->mutex);
-    size_t i;
-    for (i = 0; i < pool->size; i++) {
-        if (&(pool->data[i].worker) == thread) {
-            pool->data[i].is_used = 0;
-            decrement_pool(pool);
-            break;
-        }
-    }
-    pthread_mutex_unlock(&pool->mutex);
-    return i;
+    return (void*) &(pool->data[i]);
 }
 
 size_t free_pool (dynamic_pool* pool) {
@@ -90,16 +101,9 @@ size_t free_pool (dynamic_pool* pool) {
     return pool->size;
 }
 
-void* test(void* fdp) {
-    int fd = *(int*)fdp;
-    dprintf(fd, "testtest");
-    close(fd);
-    return NULL;
-}
-
 int main() {
 
-    printf("Using sockets. Server is running...\n");
+    printf("Server is running...\n");
 
     int sock_fd;
     if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -115,6 +119,7 @@ int main() {
     unsigned int saddr_size = sizeof(struct sockaddr_in);
 
     errno = 0;
+    setsockopt(sock_fd,SOL_SOCKET,SO_REUSEADDR, &saddr, saddr_size);
     if (bind(sock_fd, (const struct sockaddr *) &saddr, saddr_size) < 0) perror("bind");
     if (listen(sock_fd, 0) < 0) perror("listen");
 
@@ -123,11 +128,12 @@ int main() {
 
     while(1) {
         int client_fd = accept(sock_fd, (struct sockaddr*) &saddr, &saddr_size);
-        pthread_t response = get_free_thread(thread_pool);
-        pthread_create(&response, NULL, test, &client_fd);
-        free_thread(thread_pool,&response);
+        pthread_mutex_lock(&thread_pool->mutex);
+        server_thread* response = get_free_thread(thread_pool);
+        response->fd = &client_fd;
+        pthread_cond_broadcast(response->cond);
+        pthread_mutex_unlock(&thread_pool->mutex);
     }
-
 
     return 0;
 }
