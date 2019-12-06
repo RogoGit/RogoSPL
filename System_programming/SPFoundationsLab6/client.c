@@ -7,42 +7,55 @@
 #include <netinet/in.h>
 #include <zconf.h>
 
-int main() {
+#define BUFSIZE 4096
 
-    int sockfd, connfd;
-    struct sockaddr_in servaddr, cli;
+int main(int argc, char** argv) {
 
-    // socket create and varification
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s host port [paths...]\n", argv[0]);
+        return 1;
+    }
+
+    int sockfd;
+    struct sockaddr_in servaddr;
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
-        printf("socket creation failed...\n");
+        fprintf(stderr, "Socket creation failed...\n");
         exit(0);
     }
-    else
-        printf("Socket successfully created..\n");
+    else printf("Socket successfully created..\n");
     bzero(&servaddr, sizeof(servaddr));
 
-    // assign IP, PORT
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(8010);
     unsigned int saddr_size = sizeof(struct sockaddr_in);
 
-    // connect the client socket to server socket
     if (connect(sockfd, (struct sockaddr*) &servaddr, saddr_size) != 0) {
-        printf("connection with the server failed...\n");
+        fprintf(stderr, "Connection with the server failed...\n");
         exit(0);
-    }
-    else
-        printf("connected to the server..\n");
+    } else printf("Connected to the server..\n\n");
 
-    // function for chat
-    //func(sockfd);
-    char buff[80];
-    bzero(buff, sizeof(buff));
-    read(sockfd, buff, sizeof(buff));
-    printf("From Server : %s", buff);
-    // close the socket
+    // process request
+    //errno = 0;
+    //int dirs = argc-3;
+    //write(sockfd, dirs, sizeof(int));
+
+    for (int i = 1; i < argc; ++i) {
+        if (write(sockfd, argv[i], strlen(argv[i])) < 0) {
+            fprintf(stderr, "Cannot write to server");
+        }
+            write(sockfd,"\r\n",strlen("\r\n"));
+    }
+    //write(sockfd,"\0",strlen("\0"));
+
+    char buff[BUFSIZE];
+    ssize_t bytes_read;
+    while ((bytes_read = read(sockfd, buff, BUFSIZE)) > 0) {
+        write(STDOUT_FILENO, buff, (size_t) bytes_read);
+    }
+
     close(sockfd);
 
     return 0;
