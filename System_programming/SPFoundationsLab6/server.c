@@ -7,8 +7,9 @@
 #include <netinet/in.h>
 #include <zconf.h>
 #include <dirent.h>
+#include <signal.h>
 
-#define DEFAULT_SIZE 3
+#define DEFAULT_SIZE 8
 #define SIZE_CHANGE 1
 #define BUFSIZE 4096
 
@@ -19,7 +20,7 @@ typedef struct {
     pthread_cond_t cond;
     } server_thread;
 
-typedef struct  {
+typedef struct {
     volatile server_thread* data;
     volatile size_t size;
     pthread_mutex_t mutex;
@@ -68,13 +69,16 @@ void* process_request(void* thr_info) {
         ssize_t bytes_read;
         while ((bytes_read = read(*info->fd, buff, BUFSIZE)) > 0) {
             char *dirs;
-            dirs = strtok(buff,"\r\n");
+            dirs = strtok(buff, "\r\n ");
             while (dirs != NULL) {
                 print_dir(*info->fd, dirs);
-                dirs = strtok(NULL,"\r\n");
+                dirs = strtok(NULL, "\r\n ");
             }
-            close(*info->fd);
+            if (dirs == NULL) break;
         }
+
+        close(*info->fd);
+        bzero(buff, sizeof(buff));
         free_thread(thread_pool, &(info->worker));
         pthread_mutex_unlock(&thread_pool->mutex);
     }
@@ -95,18 +99,18 @@ size_t create_dynamic_thread_pool (dynamic_pool* pool) {
     return pool->size;
 }
 
-size_t increment_pool (dynamic_pool* pool) {
+server_thread* increment_pool (dynamic_pool* pool) {
     size_t old_size = pool->size;
     pool->size += SIZE_CHANGE;
     pool->data = (server_thread*) realloc ((void*)pool->data, pool->size * sizeof(server_thread));
     size_t i;
     for (i = old_size; i < pool->size; i++) {
-        //pool->data[i].fd = (int) malloc(sizeof(int));
-       // pool->data[i].fd = (int) NULL;
+        pool->data[i].fd = NULL;
         pool->data[i].is_used = 0;
-        pthread_create((void*) &(pool->data[i].worker), NULL, process_request, (void*) &(pool->data[i].fd));
+        pool->data[i].cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
+        pthread_create((void*) &(pool->data[i].worker), NULL, process_request, (void*) &pool->data[i]);
     }
-    return pool->size;
+    return (void*) &pool->data[old_size+1];
 }
 
 server_thread* get_free_thread (dynamic_pool* pool) {
@@ -117,18 +121,13 @@ server_thread* get_free_thread (dynamic_pool* pool) {
             return (void*) &(pool->data[i]);
         }
     }
-    //increment_pool(pool);
-    pool->data[i].is_used = 1;
-    return (void*) &(pool->data[i]);
+    return increment_pool(pool);
 }
 
-size_t free_pool (dynamic_pool* pool) {
-    pthread_mutex_lock(&pool->mutex);
-    free ((void*)pool->data);
-    pool->size = 0;
-    pool->data = NULL;
-    pthread_mutex_unlock(&pool->mutex);
-    return pool->size;
+void free_pool () {
+    free ((void*)thread_pool->data);
+    thread_pool->size = 0;
+    thread_pool->data = NULL;
 }
 
 int main() {
@@ -155,14 +154,13 @@ int main() {
 
     thread_pool = malloc(sizeof(dynamic_pool));
     create_dynamic_thread_pool(thread_pool);
+    signal(SIGINT, free_pool);
 
     while(1) {
         int client_fd = accept(sock_fd, (struct sockaddr*) &saddr, &saddr_size);
-        //pthread_mutex_lock(&thread_pool->mutex);
         server_thread* response = get_free_thread(thread_pool);
         response->fd = &client_fd;
         pthread_cond_signal(&response->cond);
-        //pthread_mutex_unlock(&thread_pool->mutex);
     }
 
     return 0;
