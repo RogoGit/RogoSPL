@@ -9,9 +9,23 @@
 
 #define BUFSIZE 4096
 
+long parse_port(const char* port) {
+    char *end;
+    long res = strtol(port, &end,10);
+    if (*end != '\0') {
+        puts("Port is not a number");
+        exit(1);
+    }
+    if (res <= 0) {
+        puts("Port should be positive");
+        exit(1);
+    }
+    return res;
+};
+
 int main(int argc, char** argv) {
 
-    if (argc < 2) {
+    if (argc < 4) {
         fprintf(stderr, "Usage: %s host port [paths...]\n", argv[0]);
         return 1;
     }
@@ -27,9 +41,11 @@ int main(int argc, char** argv) {
     else printf("Socket successfully created..\n");
     bzero(&servaddr, sizeof(servaddr));
 
+    long port = parse_port(argv[2]);
+
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(8010);
+    servaddr.sin_port = htons(port);
     unsigned int saddr_size = sizeof(struct sockaddr_in);
 
     if (connect(sockfd, (struct sockaddr*) &servaddr, saddr_size) != 0) {
@@ -37,18 +53,12 @@ int main(int argc, char** argv) {
         exit(0);
     } else printf("Connected to the server..\n\n");
 
-    // process request
-    //errno = 0;
-    //int dirs = argc-3;
-    //write(sockfd, dirs, sizeof(int));
-
-    for (int i = 1; i < argc; ++i) {
+    for (int i = 3; i < argc; ++i) {
         if (write(sockfd, argv[i], strlen(argv[i])) < 0) {
             fprintf(stderr, "Cannot write to server");
         }
-            write(sockfd,"\r\n",strlen("\r\n"));
+            write(sockfd,"\r\n ",strlen("\r\n "));
     }
-    //write(sockfd,"\0",strlen("\0"));
 
     char buff[BUFSIZE];
     ssize_t bytes_read;
