@@ -4,10 +4,11 @@ use strict;
 use warnings qw(FATAL all);
 use IO::Socket::INET;
 
-my $host = '127.0.0.1';
-my $port = 8015;
+my $host = $ARGV[0];
+my $port = $ARGV[1];
+my @dirs = @ARGV[2..(scalar(@ARGV)-1)];
 
-my $request = join(" ", @ARGV);
+my $request = join(" ", @dirs);
 
 my $client = new IO::Socket::INET (
   	PeerHost => $host,
